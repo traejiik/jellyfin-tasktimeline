@@ -1,0 +1,71 @@
+name: Release plugin
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: plugin-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    env:
+      RELEASE_TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Require a release from development
+        run: |
+          git fetch origin development
+          git merge-base --is-ancestor HEAD origin/development
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Test packaging
+        run: python3 -m unittest discover -s tests/packaging -v
+      - name: Derive version from tag
+        run: echo "PLUGIN_VERSION=$(python3 packaging/release.py version --tag "$RELEASE_TAG")" >> "$GITHUB_ENV"
+      - name: Restore
+        run: dotnet restore Jellyfin.Plugin.TaskTimeline.sln
+      - name: Check formatting
+        run: dotnet format Jellyfin.Plugin.TaskTimeline.sln --no-restore --verify-no-changes
+      - name: Publish versioned assembly
+        run: >-
+          dotnet publish src/Jellyfin.Plugin.TaskTimeline/Jellyfin.Plugin.TaskTimeline.csproj
+          --configuration Release --no-restore --output artifacts/publish
+          -p:Version="$PLUGIN_VERSION" -p:AssemblyVersion="$PLUGIN_VERSION"
+          -p:FileVersion="$PLUGIN_VERSION" -p:InformationalVersion="$RELEASE_TAG"
+      - name: Generate release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: >-
+          gh api --method POST "repos/$GH_REPO/releases/generate-notes"
+          -f tag_name="$RELEASE_TAG" --jq .body > artifacts/release-notes.md
+      - name: Package plugin and installation feed
+        env:
+          RELEASE_REPOSITORY: ${{ github.repository }}
+        run: >-
+          python3 packaging/release.py package --tag "$RELEASE_TAG"
+          --repository "$RELEASE_REPOSITORY" --publish-dir artifacts/publish
+          --notes-file artifacts/release-notes.md --output dist
+      - name: Publish release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: >-
+          gh release create "$RELEASE_TAG" dist/*.zip dist/*.sha256 dist/manifest.json
+          --verify-tag --title "Task Timeline $RELEASE_TAG"
+          --notes-file artifacts/release-notes.md --latest

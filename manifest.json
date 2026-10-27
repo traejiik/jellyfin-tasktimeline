@@ -1,0 +1,17 @@
+[
+  {
+    "guid": "ac82f485-7bb4-472f-b122-248e1772eca6",
+    "name": "Task Timeline",
+    "category": "administration",
+    "owner": "traejiik",
+    "imageUrl": "tbd",
+    "description": "Visualise scheduled tasks on a timeline",
+    "overview": "See upcoming scheduled tasks, their configured triggers, and recent run information in your Jellyfin dashboard.",
+    "versions": [
+      {
+        "version": "0.0.0.0",
+        "targetAbi": "12.2.0.0"
+      }
+    ]
+  }
+]

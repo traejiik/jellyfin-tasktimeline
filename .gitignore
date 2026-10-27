@@ -1,0 +1,23 @@
+# Local agent instructions and private planning
+[Aa][Gg][Ee][Nn][Tt][Ss].[Mm][Dd]
+[Cc][Ll][Aa][Uu][Dd][Ee].[Mm][Dd]
+/docs/superpowers/
+**/superpowers/
+
+# Build, release and test output
+**/bin/
+**/obj/
+/dist/
+/artifacts/
+/TestResults/
+**/__pycache__/
+*.pyc
+
+# Local editor, OS and credentials
+.vs/
+.vscode/
+.idea/
+.DS_Store
+.env
+.env.*
+*.user

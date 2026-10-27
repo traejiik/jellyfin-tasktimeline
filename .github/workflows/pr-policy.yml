@@ -1,0 +1,29 @@
+name: PR policy
+
+on:
+  pull_request:
+    branches: [development]
+    types: [opened, edited, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+
+jobs:
+  policy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Check branch name and release label
+        env:
+          BRANCH: ${{ github.head_ref }}
+          LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          if not re.fullmatch(r'feat/[a-z0-9]+(?:[/-][a-z0-9]+)*', os.environ['BRANCH']):
+              raise SystemExit('Use a feat/<topic> source branch.')
+          if not set(json.loads(os.environ['LABELS'])) & {'feature', 'fix', 'documentation', 'maintenance'}:
+              raise SystemExit('Add a feature, fix, documentation, or maintenance label.')
+          PY
