@@ -30,7 +30,7 @@ def package(template, publish, output, tag, repository, notes):
         raise FileNotFoundError(f'Missing published assembly: {assembly}')
     manifest = json.loads(template.read_text())
     plugin = manifest[0]
-    # Artwork is deferred. Never publish the template placeholder as a broken URL.
+    # Never publish a template placeholder as a broken artwork URL.
     if plugin.get('imageUrl') == 'tbd':
         del plugin['imageUrl']
     release = {
