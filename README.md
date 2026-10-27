@@ -1,5 +1,7 @@
 # Task Timeline
 
+![Task Timeline](docs/assets/tasktimeline-card.png)
+
 Visualise scheduled tasks on a timeline inside Jellyfin's administration dashboard.
 
 Initial repository setup only: the plugin shell and release pipeline exist; task projection and the UI are not implemented yet. The first functional release will be read-only. Editing and restore are later work.
@@ -29,6 +31,6 @@ https://github.com/traejiik/jellyfin-tasktimeline/releases/latest/download/manif
 
 Install **Task Timeline** from the catalog and restart Jellyfin as required. Later stable releases update the same feed URL. Until a first release exists, this URL will return 404.
 
-The root `manifest.json` is a template, not a live installation feed. A release replaces the placeholder version, adds its timestamp, download URL and checksum, and omits the pending image URL. The generated feed contains the latest release only; older packages remain on GitHub Releases.
+The root `manifest.json` is a template, not a live installation feed. A release replaces the placeholder version, adds its timestamp, download URL and checksum, and uses the catalog artwork URL. The generated feed contains the latest release only; older packages remain on GitHub Releases.
 
 See [architecture](docs/architecture.md), [operations and releases](docs/operations.md), and [product scope](docs/product.md).

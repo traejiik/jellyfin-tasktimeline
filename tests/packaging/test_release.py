@@ -42,7 +42,7 @@ class ReleaseTests(unittest.TestCase):
             archive = output / 'tasktimeline_1.2.3.0.zip'
             self.assertEqual(hashlib.md5(archive.read_bytes()).hexdigest(), entry['checksum'])
             self.assertTrue(entry['sourceUrl'].endswith('/v1.2.3/tasktimeline_1.2.3.0.zip'))
-            self.assertNotIn('imageUrl', manifest[0])
+            self.assertEqual(json.loads(template)[0]['imageUrl'], manifest[0]['imageUrl'])
             with zipfile.ZipFile(archive) as bundle:
                 self.assertEqual({dll, 'meta.json'}, set(bundle.namelist()))
                 metadata = json.loads(bundle.read('meta.json'))
