@@ -7,11 +7,6 @@
     "imageUrl": "https://raw.githubusercontent.com/traejiik/jellyfin-tasktimeline/development/docs/assets/tasktimeline-card.png",
     "description": "Visualise scheduled tasks on a timeline",
     "overview": "See upcoming scheduled tasks, their configured triggers, and recent run information in your Jellyfin dashboard.",
-    "versions": [
-      {
-        "version": "0.0.0.0",
-        "targetAbi": "12.2.0.0"
-      }
-    ]
+    "versions": []
   }
 ]

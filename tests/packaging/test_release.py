@@ -33,7 +33,11 @@ class ReleaseTests(unittest.TestCase):
             (publish / dll).write_bytes(b'plugin assembly fixture')
             (publish / 'Jellyfin.Controller.dll').write_bytes(b'host dependency')
             output = root / 'out'
-            self.release.package(ROOT / 'manifest.json', publish, output,
+            empty_template = root / 'manifest.json'
+            plugin = json.loads(template)
+            plugin[0]['versions'] = []
+            empty_template.write_text(json.dumps(plugin))
+            self.release.package(empty_template, publish, output,
                                  'v1.2.3', 'traejiik/jellyfin-tasktimeline', 'First release')
             manifest = json.loads((output / 'manifest.json').read_text())
             entry = manifest[0]['versions'][0]

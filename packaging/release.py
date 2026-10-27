@@ -7,8 +7,10 @@ import json
 from pathlib import Path
 import re
 import zipfile
+import xml.etree.ElementTree as ET
 
 DLL = 'Jellyfin.Plugin.TaskTimeline.dll'
+PROJECT = Path(__file__).resolve().parents[1] / 'src/Jellyfin.Plugin.TaskTimeline/Jellyfin.Plugin.TaskTimeline.csproj'
 
 
 def version_from_tag(tag):
@@ -33,9 +35,13 @@ def package(template, publish, output, tag, repository, notes):
     # Never publish a template placeholder as a broken artwork URL.
     if plugin.get('imageUrl') == 'tbd':
         del plugin['imageUrl']
+    project = ET.parse(PROJECT)
+    server_version = project.find(".//PackageReference[@Include='Jellyfin.Controller']").attrib['Version']
+    if not re.fullmatch(r'\d+\.\d+\.\d+', server_version):
+        raise ValueError('Pin Jellyfin.Controller to a three-part version to derive the target ABI')
     release = {
         'version': version,
-        'targetAbi': plugin['versions'][0]['targetAbi'],
+        'targetAbi': server_version + '.0',
         'changelog': notes.strip(),
         'timestamp': datetime.now(timezone.utc).isoformat(timespec='seconds').replace('+00:00', 'Z'),
     }
