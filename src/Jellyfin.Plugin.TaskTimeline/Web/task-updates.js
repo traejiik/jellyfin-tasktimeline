@@ -90,4 +90,3 @@ export function createLiveTaskMonitor(api, { onTasks, onStatus }) {
         refresh
     };
 }
-

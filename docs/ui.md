@@ -44,4 +44,15 @@ Set `JELLYTEST_DIAGNOSTICS=1` only on a test server with the diagnostic build in
 
 Browser integration is a test-server check, not part of ordinary CI. Normal CI covers all Node behavior tests, C# tests, build/format checks, packaging checks and resource inclusion/exclusion. Supported versions and visual themes must be stated from actual runs; a successful build alone is not runtime verification.
 
-Verified on 28 October 2026: normal-package page and authenticated module loading on Jellyfin 12.2.0; the full timeline on Jellytest 12.4.0; real reported and indeterminate progress on both versions using controlled diagnostic tasks. Browser checks covered selection, grouping, stale retention, empty/first-load/access errors, reconnect, subscription cleanup, keyboard interaction, desktop/mobile layout, and text/focus contrast under native dark/light palettes. Overlap and multiple-running edge cases used explicitly synthetic fixtures. The shared diagnostic browser suite also passed after extraction. This establishes the tested versions and palettes, not every third-party theme or client.
+Verified on 28 October 2026:
+
+| Check | Evidence |
+| --- | --- |
+| Normal package, Jellyfin 12.2.0 | Page registration, authenticated module loading, real task definitions and browser acceptance passed |
+| Jellytest 12.4.0 | Full product-page browser acceptance passed alongside the existing plugins |
+| Native progress, 12.2.0 and 12.4.0 | Actual reported and indeterminate execution reached the normal page using only controlled diagnostic tasks |
+| Shared diagnostic | Existing progress, reconnect, navigation and second-subscriber browser checks passed after extraction |
+| Native dark/light palettes | Desktop/mobile screenshots inspected; muted explanatory text measured at least 4.5:1, keyboard focus at least 3:1 |
+| Pure/unit checks | 44 C# tests, 18 Node tests and three packaging tests passed; normal/diagnostic build/format checks and resource assertions passed |
+
+Selection, grouping, stale retention, empty/first-load/access errors, reconnect, subscription cleanup, keyboard interaction and live-region behavior were exercised. Overlap and multiple-running edge cases used explicitly synthetic fixtures because current runtime schedules did not provide those examples. These checks establish the tested versions and palettes, not every third-party theme or client. The disposable minimum-version container and its volumes were removed afterward; no production data was mounted into it.
