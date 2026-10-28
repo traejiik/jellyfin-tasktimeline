@@ -23,6 +23,7 @@ python3 -m unittest discover -s tests/packaging -v
 
 ## Install and update
 
+<!-- TODO: point this at https://raw.githubusercontent.com/traejiik/jellyfin-tjk-plugins/main/manifest.json, which lists every version of both plugins. -->
 Once the first public release exists, add this repository URL in Jellyfin's plugin repository settings:
 
 ```text
