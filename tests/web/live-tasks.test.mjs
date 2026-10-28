@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createLiveTaskMonitor, taskProgress } from '../../src/Jellyfin.Plugin.TaskTimeline/Web/Diagnostics/diagnostics.js';
+import { createLiveTaskMonitor, taskProgress } from '../../src/Jellyfin.Plugin.TaskTimeline/Web/task-updates.js';
 
 function harness() {
     let receive;

@@ -1,97 +1,28 @@
-// Self-contained because Jellyfin imports plugin controllers through its view loader.
-export function taskProgress(task) {
-    const value = task.CurrentProgressPercentage;
-    return task.State === 'Running' && Number.isFinite(value) && value >= 0 && value <= 100 ? value : null;
-}
-
-export function createLiveTaskMonitor(api, { onTasks, onStatus }) {
-    let active = false;
-    let connected = true;
-    let ready = false;
-    let generation = 0;
-    let request = 0;
-    let buffered;
-    let unsubscribe;
-
-    function receive(message) {
-        if (!active || !connected || !Array.isArray(message.Data)) return;
-        if (!ready) {
-            buffered = message.Data;
-            return;
-        }
-        onTasks(message.Data, 'live');
-        onStatus('live');
-    }
-
-    async function refresh() {
-        if (!active || !connected) return;
-        const lifetime = generation;
-        const currentRequest = ++request;
-        ready = false;
-        buffered = undefined;
-        onStatus('connecting');
-        try {
-            const tasks = await api.getScheduledTasks();
-            if (!active || !connected || lifetime !== generation || currentRequest !== request) return;
-            if (!Array.isArray(tasks)) throw new Error('Invalid task response');
-            onTasks(tasks, 'snapshot');
-            ready = true;
-            onStatus('awaiting-live');
-            if (buffered) {
-                const tasks = buffered;
-                buffered = undefined;
-                receive({ Data: tasks });
-            }
-        } catch {
-            if (active && lifetime === generation && currentRequest === request) onStatus('stale');
-        }
-    }
-
-    return {
-        async start() {
-            if (active) return;
-            active = true;
-            connected = true;
-            generation++;
-            try {
-                const lifetime = generation;
-                unsubscribe = api.subscribe(['ScheduledTasksInfo'], message => {
-                    if (lifetime === generation) receive(message);
-                });
-                await refresh();
-            } catch {
-                onStatus('unavailable');
-            }
-        },
-        stop() {
-            if (!active) return;
-            active = false;
-            ready = false;
-            generation++;
-            request++;
-            buffered = undefined;
-            unsubscribe?.();
-            unsubscribe = undefined;
-            onStatus('stopped');
-        },
-        connectionLost() {
-            if (!active) return;
-            connected = false;
-            ready = false;
-            request++;
-            buffered = undefined;
-            onStatus('disconnected');
-        },
-        reconnect() {
-            if (!active) return Promise.resolve();
-            connected = true;
-            return refresh();
-        },
-        refresh
-    };
-}
-
+// The native view loader imports controllers from Blob URLs; load shared resources explicitly.
 export default function (view) {
+    let shown = false;
+    let destroyed = false;
+    const bootstrap = new AbortController();
+    view.addEventListener('viewshow', () => { shown = true; }, { signal: bootstrap.signal });
+    view.addEventListener('viewhide', () => { shown = false; }, { signal: bootstrap.signal });
+    view.addEventListener('viewdestroy', () => { destroyed = true; bootstrap.abort(); }, { signal: bootstrap.signal });
+    const api = globalThis.ApiClient;
+    api.ajax({ url: api.getUrl('web/ConfigurationPage', { name: 'taskTimelineTaskUpdatesJs' }), type: 'GET', dataType: 'text' })
+        .then(async source => {
+            const url = URL.createObjectURL(new Blob([source], { type: 'text/javascript' }));
+            try {
+                const shared = await import(url);
+                if (destroyed) return;
+                bootstrap.abort();
+                initialize(view, shared);
+                if (shown) view.dispatchEvent(new Event('viewshow'));
+            } finally { URL.revokeObjectURL(url); }
+        }).catch(() => {
+            if (!destroyed) view.querySelector('[data-status]').textContent = 'Could not load native task monitoring. Reopen this page to retry.';
+        });
+}
+
+function initialize(view, { createLiveTaskMonitor, taskProgress }) {
     const api = globalThis.ApiClient;
     const root = view.querySelector('[data-diagnostics]');
     const status = root.querySelector('[data-status]');

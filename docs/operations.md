@@ -19,13 +19,13 @@ For a manual shell build:
 dotnet publish src/Jellyfin.Plugin.TaskTimeline/Jellyfin.Plugin.TaskTimeline.csproj --configuration Release --output artifacts/publish
 ```
 
-Deploy only the plugin DLL into its own folder under Jellytest's actual plugin mount and restart Jellytest. Do not copy host framework assemblies. Confirm the plugin is listed and loads without errors. The forecast API is available; the user-facing task timeline is not implemented yet.
+Deploy only the plugin DLL into its own folder under Jellytest's actual plugin mount and restart Jellytest. Do not copy host framework assemblies. Confirm the plugin is listed and loads without errors. The normal build includes the Task Timeline dashboard page and forecast API; see [UI behavior](ui.md).
 
 ## Forecast API
 
 `GET /TaskTimeline/Forecast` requires an authenticated Jellyfin administrator session using the native `RequiresElevation` policy. The endpoint never starts tasks or modifies triggers. It returns camelCase JSON with explicit nulls, UTC timestamps and integer millisecond durations, independently of the server's default JSON naming settings. Responses are not cached.
 
-The response includes `generatedAt`, `rangeStart`, `rangeEnd`, `serverTimeZone`, `tasks`, `triggers`, `occurrences` and `overlaps`. The range is `[rangeStart, rangeEnd)`, covering the next 168 elapsed hours. Task state is an observation at generation time, not a live stream.
+The response includes `generatedAt`, `rangeStart`, `rangeEnd`, `serverTimeZone`, `tasks`, `triggers`, `occurrences` and `overlaps`. The range is `[rangeStart, rangeEnd)`, covering the next 168 elapsed hours. Task state is an observation at generation time, not a live stream. Where possible, Windows server timezone IDs are normalized to IANA identifiers for browser date formatting; calculations still use the server timezone.
 
 Trigger statuses are `projected`, `timingUnknown`, `eventBased` and `unsupported`. Each non-projectable source has a `reasonCode`; no fake timestamps are emitted. Interval timing remains unknown. Clock changes within the forecast or preceding rule period conservatively withhold affected daily/weekly sources with `clockChangeTimingUnknown`, because native relative timer deadlines depend on arming time. Unknown or malformed rules remain visible. Source and occurrence IDs are local to one response and must not be treated as persistent identities.
 

@@ -1,6 +1,6 @@
 # Live-progress diagnostic
 
-This development-only probe verifies native scheduled-task updates inside an embedded plugin page. It does not implement the Task Timeline forecast or establish its final UI layout.
+This development-only probe verifies native scheduled-task updates inside an embedded plugin page. It is separate from the normal Task Timeline page and shares its native transport module.
 
 ## Build and open
 
@@ -23,11 +23,11 @@ The page offers two explicitly manual test tasks. Both have an empty default tri
 - Reported progress: reports 0, 25, 50, 75 and 100 percent, waiting three seconds at each step.
 - No percentage: waits twelve seconds without reporting a percentage, producing an indeterminate progress indicator.
 
-The normal build omits the tasks, page registration, and diagnostic web resources entirely. It requires no diagnostic configuration setting and leaves source version placeholders unchanged.
+The normal build omits the diagnostic tasks, diagnostic page registration, and diagnostic web resources entirely. It includes the normal timeline and shared task-update module. It requires no diagnostic configuration setting and leaves source version placeholders unchanged.
 
 ## Subscription behavior
 
-The page calls the host's authenticated `ApiClient.subscribe(['ScheduledTasksInfo'], callback)` bridge. It does not create a separate WebSocket or store credentials. The SDK manages shared subscriptions, server start/stop messages, and reconnection.
+The shared `Web/task-updates.js` module calls the host's authenticated `ApiClient.subscribe(['ScheduledTasksInfo'], callback)` bridge. It does not create a separate WebSocket or store credentials. The SDK manages shared subscriptions, server start/stop messages, and reconnection.
 
 For connection status, the compatibility adapter uses the host's guarded `ApiClient._sdk.webSocket.onStatusChange` bridge. The `onStatusChange` method is a public SDK API; exposing `_sdk` on the legacy client is a dashboard implementation detail. Both supported test versions must therefore be checked. If the bridge is unavailable, the diagnostic displays an explicit capability failure rather than silently claiming live status.
 
@@ -78,4 +78,4 @@ CI runs the lifecycle tests and builds/formats both the ordinary and diagnostic 
 
 On both servers, the browser observed real reported progress, task completion, an indeterminate running state, offline/online recovery, socket-only reconnection with a new snapshot, three navigation cycles with exactly one page subscription and no new socket connections, and continued native updates to another task subscriber after this page left. The controlled tasks finished before the test ended. No existing task triggers were intentionally edited and no non-diagnostic task was manually started; restarting Jellytest ran its normal startup jobs.
 
-The diagnostic build remains installed on Jellytest for manual inspection. These checks establish the live-update integration on the two tested versions, not completion of the forecast feature or a guarantee about future Jellyfin client internals.
+The diagnostic build remains installed on Jellytest for manual inspection. These checks establish the live-update integration on the two tested versions, not a guarantee about future Jellyfin client internals. See [UI behavior](ui.md) for the normal product page.

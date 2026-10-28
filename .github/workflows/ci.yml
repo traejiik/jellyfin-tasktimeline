@@ -24,7 +24,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
-      - name: Test live-task lifecycle
+      - name: Test timeline and live-task behavior
         run: node --test tests/web/*.test.mjs
       - name: Test packaging
         run: python3 -m unittest discover -s tests/packaging -v
@@ -48,6 +48,9 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           assembly = Path('artifacts/standard/Jellyfin.Plugin.TaskTimeline.dll').read_bytes()
+          for marker in (b'Jellyfin.Plugin.TaskTimeline.Web.timeline.html', b'Jellyfin.Plugin.TaskTimeline.Web.timeline.js', b'Jellyfin.Plugin.TaskTimeline.Web.timeline-model.js', b'Jellyfin.Plugin.TaskTimeline.Web.task-updates.js'):
+              if marker not in assembly:
+                  raise SystemExit('Normal build is missing a timeline resource')
           for marker in (b'ProgressDiagnosticTask', b'IndeterminateDiagnosticTask', b'Jellyfin.Plugin.TaskTimeline.Web.Diagnostics'):
               if marker in assembly:
                   raise SystemExit('Normal build unexpectedly includes diagnostic code or resources')
