@@ -74,3 +74,13 @@ jobs:
           gh release create "$RELEASE_TAG" dist/*.zip dist/*.sha256 dist/manifest.json
           --verify-tag --title "Task Timeline $RELEASE_TAG"
           --notes-file artifacts/release-notes.md --latest
+      - name: Refresh the combined plugin repository
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.PLUGIN_REPOSITORY_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "PLUGIN_REPOSITORY_TOKEN is not set; the plugin repository refreshes on its hourly schedule."
+            exit 0
+          fi
+          gh api --method POST repos/traejiik/jellyfin-tjk-plugins/dispatches -f event_type=plugin-released
