@@ -33,4 +33,6 @@ Install **Task Timeline** from the catalog and restart Jellyfin as required. Lat
 
 The root `manifest.json` is a template, not a live installation feed. Its `versions` list starts empty. A release adds the tag-derived version, target ABI from the Jellyfin.Controller package reference, timestamp, download URL and checksum to the generated manifest, and uses the catalog artwork URL. The generated feed contains the latest release only; older packages remain on GitHub Releases.
 
+For the development-only live-progress probe, see [diagnostics](docs/diagnostics.md).
+
 See [architecture](docs/architecture.md), [operations and releases](docs/operations.md), and [product scope](docs/product.md).

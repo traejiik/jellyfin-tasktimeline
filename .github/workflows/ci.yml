@@ -21,6 +21,11 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Test live-task lifecycle
+        run: node --test tests/web/*.test.mjs
       - name: Test packaging
         run: python3 -m unittest discover -s tests/packaging -v
       - name: Restore
@@ -29,3 +34,19 @@ jobs:
         run: dotnet format Jellyfin.Plugin.TaskTimeline.sln --no-restore --verify-no-changes
       - name: Build
         run: dotnet build Jellyfin.Plugin.TaskTimeline.sln --configuration Release --no-restore
+      - name: Check diagnostic formatting
+        env:
+          TaskTimelineDiagnostics: 'true'
+        run: dotnet format Jellyfin.Plugin.TaskTimeline.sln --no-restore --verify-no-changes
+      - name: Build development-only diagnostic
+        run: dotnet build Jellyfin.Plugin.TaskTimeline.sln --configuration Release --no-restore -p:TaskTimelineDiagnostics=true
+      - name: Confirm normal build excludes diagnostics
+        run: |
+          dotnet publish src/Jellyfin.Plugin.TaskTimeline/Jellyfin.Plugin.TaskTimeline.csproj --configuration Release --no-restore --output artifacts/standard
+          python3 - <<'PY'
+          from pathlib import Path
+          assembly = Path('artifacts/standard/Jellyfin.Plugin.TaskTimeline.dll').read_bytes()
+          for marker in (b'ProgressDiagnosticTask', b'IndeterminateDiagnosticTask', b'Jellyfin.Plugin.TaskTimeline.Web.Diagnostics'):
+              if marker in assembly:
+                  raise SystemExit('Normal build unexpectedly includes diagnostic code or resources')
+          PY
