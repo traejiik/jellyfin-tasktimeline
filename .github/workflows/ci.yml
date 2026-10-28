@@ -34,6 +34,8 @@ jobs:
         run: dotnet format Jellyfin.Plugin.TaskTimeline.sln --no-restore --verify-no-changes
       - name: Build
         run: dotnet build Jellyfin.Plugin.TaskTimeline.sln --configuration Release --no-restore
+      - name: Test forecast behavior and API authorization
+        run: dotnet test Jellyfin.Plugin.TaskTimeline.sln --configuration Release --no-build
       - name: Check diagnostic formatting
         env:
           TaskTimelineDiagnostics: 'true'
