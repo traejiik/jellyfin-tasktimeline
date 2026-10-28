@@ -42,6 +42,8 @@ def package(template, publish, output, tag, repository, notes):
     release = {
         'version': version,
         'targetAbi': server_version + '.0',
+        # TODO: strip the <!-- ... --> comment that categorised notes from .github/release.yml start with,
+        # as jellyfin-anidoki does, or Jellyfin shows it as text in the changelog.
         'changelog': notes.strip(),
         'timestamp': datetime.now(timezone.utc).isoformat(timespec='seconds').replace('+00:00', 'Z'),
     }
