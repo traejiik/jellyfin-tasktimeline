@@ -1,0 +1,17 @@
+<div id="taskTimelineDiagnostics" data-role="page" class="page type-interior pluginConfigurationPage" data-controller="__plugin/taskTimelineDiagnosticsJs">
+    <div data-role="content">
+        <section data-diagnostics aria-labelledby="diagnostic-title" style="max-width: 54rem; margin: 2rem auto; padding: 1rem;">
+            <h1 id="diagnostic-title">Task Timeline — live-progress diagnostic</h1>
+            <p>This development-only page checks native task updates. The two test tasks only wait; they have no scheduled triggers.</p>
+            <p data-status role="status">Connecting…</p>
+            <p>Native task messages: <strong data-messages>0</strong> · Last task update: <span data-refreshed>Not yet received</span></p>
+            <p>
+                <button type="button" data-refresh>Refresh task snapshot</button>
+                <button type="button" data-run-task="TaskTimeline.Diagnostics.Progress" disabled>Run reported-progress test</button>
+                <button type="button" data-run-task="TaskTimeline.Diagnostics.Indeterminate" disabled>Run no-percentage test</button>
+            </p>
+            <ul data-tasks aria-label="Diagnostic tasks"></ul>
+            <p>Keep this page open to observe live updates. Navigating away releases only this page’s subscriptions.</p>
+        </section>
+    </div>
+</div>

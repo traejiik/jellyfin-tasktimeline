@@ -8,12 +8,16 @@
     <AssemblyVersion>0.0.0.0</AssemblyVersion>
     <FileVersion>0.0.0.0</FileVersion>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(TaskTimelineDiagnostics)' == 'true'">
+    <DefineConstants>$(DefineConstants);TASKTIMELINE_DIAGNOSTICS</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Jellyfin.Controller" Version="12.2.0" ExcludeAssets="runtime" />
     <PackageReference Include="Jellyfin.Model" Version="12.2.0" ExcludeAssets="runtime" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Web/**/*.html;Web/**/*.js;Web/**/*.css" />
+    <EmbeddedResource Include="Web/**/*.html;Web/**/*.js;Web/**/*.css" Exclude="Web/Diagnostics/**" />
+    <EmbeddedResource Include="Web/Diagnostics/**/*.html;Web/Diagnostics/**/*.js" Condition="'$(TaskTimelineDiagnostics)' == 'true'" />
   </ItemGroup>
 </Project>
