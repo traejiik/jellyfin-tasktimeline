@@ -46,6 +46,8 @@ jobs:
         run: dotnet restore Jellyfin.Plugin.TaskTimeline.sln
       - name: Check formatting
         run: dotnet format Jellyfin.Plugin.TaskTimeline.sln --no-restore --verify-no-changes
+      - name: Build and test forecast behavior
+        run: dotnet test Jellyfin.Plugin.TaskTimeline.sln --configuration Release --no-restore
       - name: Publish versioned assembly
         run: >-
           dotnet publish src/Jellyfin.Plugin.TaskTimeline/Jellyfin.Plugin.TaskTimeline.csproj
