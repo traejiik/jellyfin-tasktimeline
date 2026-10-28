@@ -5,6 +5,14 @@ namespace Jellyfin.Plugin.TaskTimeline.Tests;
 
 public class ForecastBuilderTests
 {
+    [Fact]
+    public void ReturnsBrowserCompatibleIanaIdForWindowsServerTimezone()
+    {
+        var zone = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
+        var result = new ForecastBuilder().Build([], Now, zone, default);
+        Assert.Equal("America/Los_Angeles", result.ServerTimeZone);
+    }
+
     private static readonly DateTimeOffset Now = DateTimeOffset.Parse("2026-10-28T10:00:00Z");
 
     [Fact]

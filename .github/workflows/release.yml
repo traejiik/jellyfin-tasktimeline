@@ -36,7 +36,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
-      - name: Test live-task lifecycle
+      - name: Test timeline and live-task behavior
         run: node --test tests/web/*.test.mjs
       - name: Test packaging
         run: python3 -m unittest discover -s tests/packaging -v

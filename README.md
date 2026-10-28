@@ -4,7 +4,7 @@
 
 Visualise scheduled tasks on a timeline inside Jellyfin's administration dashboard.
 
-The plugin provides an administrator-only seven-day forecast API with daily/weekly projections, explicit timing uncertainty and read-only overlap indicators. Native live-progress transport is verified through a development diagnostic. The timeline UI is not implemented yet. The first functional release will be read-only; editing and restore are later work.
+The plugin provides a read-only week timeline and agenda in Jellyfin’s dashboard, with category grouping, task details, overlap indicators and native live progress. Its administrator-only forecast API projects daily/weekly rules over the next 168 hours and keeps uncertain timing visible. Editing and restore are later work.
 
 ## Requirements
 
@@ -37,6 +37,6 @@ Install **Task Timeline** from the catalog and restart Jellyfin as required. Lat
 
 The root `manifest.json` is a template, not a live installation feed. Its `versions` list starts empty. A release adds the tag-derived version, target ABI from the Jellyfin.Controller package reference, timestamp, download URL and checksum to the generated manifest, and uses the catalog artwork URL. The generated feed contains the latest release only; older packages remain on GitHub Releases.
 
-For the development-only live-progress probe, see [diagnostics](docs/diagnostics.md).
+For the dashboard page and its behavior, see [timeline UI](docs/ui.md). For the development-only live-progress probe, see [diagnostics](docs/diagnostics.md).
 
 See [architecture](docs/architecture.md), [operations and releases](docs/operations.md), and [product scope](docs/product.md).

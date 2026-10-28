@@ -37,7 +37,8 @@ public sealed class ForecastBuilder
         }
 
         var ordered = occurrences.OrderBy(x => x.ProjectedStart).ToArray();
-        return new(now.UtcDateTime, now.UtcDateTime, end.UtcDateTime, zone.Id, tasks, triggers, ordered, OverlapDetector.Find(ordered, cancellationToken));
+        var zoneId = !zone.HasIanaId && TimeZoneInfo.TryConvertWindowsIdToIanaId(zone.Id, out var ianaId) ? ianaId : zone.Id;
+        return new(now.UtcDateTime, now.UtcDateTime, end.UtcDateTime, zoneId, tasks, triggers, ordered, OverlapDetector.Find(ordered, cancellationToken));
     }
 
     private static ForecastExecution? LastExecution(ExecutionInput? input)
