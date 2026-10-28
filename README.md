@@ -4,12 +4,13 @@
 
 Visualise scheduled tasks on a timeline inside Jellyfin's administration dashboard.
 
-Initial repository setup only: the plugin shell and release pipeline exist; task projection and the UI are not implemented yet. The first functional release will be read-only. Editing and restore are later work.
+The plugin provides an administrator-only seven-day forecast API with daily/weekly projections, explicit timing uncertainty and read-only overlap indicators. Native live-progress transport is verified through a development diagnostic. The timeline UI is not implemented yet. The first functional release will be read-only; editing and restore are later work.
 
 ## Requirements
 
 - Jellyfin 12.2 (target ABI `12.2.0.0`). Runtime compatibility must be verified on Jellytest before release.
 - .NET 10 SDK for development.
+- Node.js 24 for live-task lifecycle tests.
 - Python 3.10 or newer for packaging checks (standard library only).
 
 ## Build and check
@@ -18,6 +19,8 @@ Initial repository setup only: the plugin shell and release pipeline exist; task
 dotnet restore Jellyfin.Plugin.TaskTimeline.sln
 dotnet format Jellyfin.Plugin.TaskTimeline.sln --no-restore --verify-no-changes
 dotnet build Jellyfin.Plugin.TaskTimeline.sln --configuration Release --no-restore
+dotnet test Jellyfin.Plugin.TaskTimeline.sln --configuration Release --no-build
+node --test tests/web/*.test.mjs
 python3 -m unittest discover -s tests/packaging -v
 ```
 
