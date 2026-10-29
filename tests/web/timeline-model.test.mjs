@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildTimelineModel, buildDayAxis, formatDuration, explainSource } from '../../src/Jellyfin.Plugin.TaskTimeline/Web/timeline-model.js';
+import { buildTimelineModel, buildDayAxis, formatDuration, explainSource, timelineNotice, taskStateLabel, forecastActivity } from '../../src/Jellyfin.Plugin.TaskTimeline/Web/timeline-model.js';
 import { forecastFixture } from './fixtures/forecast.mjs';
 
 test('axis covers partial UTC dates and excludes an exact midnight endpoint', () => {
@@ -72,4 +72,37 @@ test('zero-length and unknown bars never cause the browser to invent overlap pai
     assert.equal(model.overlapPairCount, 0);
     assert.equal(model.occurrences[0].end, model.occurrences[0].start);
     assert.equal(model.occurrences[1].end, null);
+});
+
+test('off-calendar groups retain sources and keep no-trigger tasks separate', () => {
+    const fixture = forecastFixture();
+    fixture.triggers.push({ ...fixture.triggers[1], sourceId: 'second-interval' });
+    fixture.triggers.push({ sourceId: 'unsupported', taskId: 'b', type: 'FutureTrigger', summary: 'Custom rule', projectionStatus: 'unsupported', reasonCode: 'unknownTriggerType' });
+    const model = buildTimelineModel(fixture);
+    assert.deepEqual(model.offCalendarGroups.map(g => g.id), ['timingUnknown', 'eventBased', 'unsupported', 'noTriggers']);
+    assert.equal(model.offCalendarGroups[0].items.length, 2);
+    assert.equal(model.offCalendarGroups[0].unit, 'sources');
+    assert.equal(model.offCalendarGroups[3].unit, 'tasks');
+    assert.equal(model.offCalendarGroups[3].items.length, 1);
+    assert.equal(model.offCalendarSourceCount, 4);
+    assert.notEqual(model.offCalendarGroups[0].items[0].sourceId, model.offCalendarGroups[0].items[1].sourceId);
+});
+
+test('routine health is quiet but failed or disconnected data remains explicit', () => {
+    assert.equal(timelineNotice('ready', 'awaiting-live', true), null);
+    assert.equal(timelineNotice('ready', 'live', true), null);
+    assert.equal(timelineNotice('loading', 'connecting', true), null);
+    assert.match(timelineNotice('stale', 'live', true), /previous forecast/i);
+    assert.match(timelineNotice('ready', 'disconnected', true), /stale/i);
+    assert.match(timelineNotice('ready', 'unavailable', true), /unavailable/i);
+    assert.match(timelineNotice('forbidden', 'live', true), /administrator/i);
+    assert.equal(forecastActivity('loading', true), 'Refreshing…');
+    assert.equal(forecastActivity('loading', false), 'Loading…');
+    assert.equal(forecastActivity('ready', true), null);
+});
+
+test('Idle describes execution, not disabled scheduling', () => {
+    assert.equal(taskStateLabel('Idle'), 'Not running');
+    assert.equal(taskStateLabel('Running'), 'Running');
+    assert.equal(taskStateLabel('Cancelling'), 'Cancelling');
 });

@@ -60,6 +60,40 @@ export function explainSource(source) {
     return { label: labels[source.projectionStatus] || 'Unavailable', reason: reasons[source.reasonCode] || (source.projectionStatus === 'projected' ? 'Calculated from the configured calendar rule; execution is not guaranteed.' : 'This source cannot currently be placed on the calendar.') };
 }
 
+export function taskStateLabel(state) {
+    return state === 'Idle' ? 'Not running' : state || 'Unknown';
+}
+
+export function forecastActivity(status, hasForecast) {
+    if (status === 'loading') return hasForecast ? 'Refreshing…' : 'Loading…';
+    if (status === 'forbidden') return 'Administrator access required';
+    if (status === 'unauthorized') return 'Sign in required';
+    return hasForecast ? null : 'Forecast unavailable';
+}
+
+export function timelineNotice(forecastStatus, liveStatus, hasForecast) {
+    if (forecastStatus === 'forbidden') return 'Administrator access is required to view Task Timeline.';
+    if (forecastStatus === 'unauthorized') return 'Your session has expired. Sign in to Jellyfin again.';
+    if (forecastStatus === 'stale') return hasForecast ? 'Forecast refresh failed. Showing the previous forecast.' : 'Could not load the forecast. Use Retry to try again.';
+    if (liveStatus === 'disconnected') return 'Live updates disconnected. Observed task state is stale.';
+    if (liveStatus === 'stale') return 'Observed task refresh failed. Displayed state is stale.';
+    if (liveStatus === 'unavailable') return 'Live progress is unavailable on this client. Forecasts remain usable.';
+    return null;
+}
+
+function offCalendarGroups(offCalendar, noTriggerTasks) {
+    const definitions = [
+        ['timingUnknown', 'Timing unknown', 'Jellyfin does not expose these interval timers’ anchors, so their next start cannot be determined.'],
+        ['eventBased', 'Event-based', 'These sources run on events such as server startup. There is no known future timestamp to show.'],
+        ['unsupported', 'Unsupported', 'These rules cannot be projected safely. Select a task for its specific limitation, including clock changes or unsupported trigger types.']
+    ];
+    const groups = definitions.map(([id, label, description]) => ({ id, label, description, unit: 'sources',
+        items: offCalendar.filter(source => (['timingUnknown', 'eventBased'].includes(source.projectionStatus) ? source.projectionStatus : 'unsupported') === id) }));
+    groups.push({ id: 'noTriggers', label: 'No triggers', unit: 'tasks', description: 'These tasks have no configured triggers. They are counted separately from undated trigger sources.',
+        items: noTriggerTasks.map(task => ({ taskId: task.taskId, task, summary: 'No configured triggers' })) });
+    return groups.filter(group => group.items.length > 0);
+}
+
 export function buildTimelineModel(forecast, { now = Date.now(), selectedTaskId, groupBy = 'category', observedTasks = new Map() } = {}) {
     const axis = buildDayAxis(forecast.rangeStart, forecast.rangeEnd, forecast.serverTimeZone);
     const tasks = forecast.tasks.map(task => {
@@ -83,9 +117,11 @@ export function buildTimelineModel(forecast, { now = Date.now(), selectedTaskId,
         ? [...new Set(tasks.map(t => t.category))].sort((a, b) => a.localeCompare(b)).map(label => ({ label, tasks: tasks.filter(t => t.category === label).sort(compare), overlapCount: pairs.filter(p => p.first?.task.category === label || p.second?.task.category === label).length }))
         : [{ label: null, tasks: [...tasks].sort(compare), overlapCount: pairs.length }];
     const nextStart = occurrences.filter(o => o.start >= now).sort((a, b) => a.start - b.start)[0] ?? null;
+    const offCalendar = forecast.triggers.filter(s => s.projectionStatus !== 'projected').map(s => ({ ...s, task: taskMap.get(s.taskId), ...explainSource(s) }));
+    const noTriggerTasks = tasks.filter(t => t.sources.length === 0);
     return { axis, tasks, occurrences, pairs, groups, selectedTaskId: taskMap.has(selectedTaskId) ? selectedTaskId : tasks[0]?.taskId ?? null,
         running: tasks.filter(t => t.state === 'Running'), nextStart, nextStarts: nextStart ? occurrences.filter(o => o.start === nextStart.start) : [],
-        offCalendar: forecast.triggers.filter(s => s.projectionStatus !== 'projected').map(s => ({ ...s, task: taskMap.get(s.taskId), ...explainSource(s) })),
+        offCalendar, offCalendarGroups: offCalendarGroups(offCalendar, noTriggerTasks),
         offCalendarSourceCount: forecast.triggers.filter(s => s.projectionStatus !== 'projected').length,
-        noTriggerTasks: tasks.filter(t => t.sources.length === 0), overlapPairCount: pairs.length, now };
+        noTriggerTasks, overlapPairCount: pairs.length, now };
 }
