@@ -3,6 +3,8 @@
 [Cc][Ll][Aa][Uu][Dd][Ee].[Mm][Dd]
 /docs/superpowers/
 **/superpowers/
+/docs/regression.md
+/docs/ui.md
 
 # Build, release and test output
 **/bin/
