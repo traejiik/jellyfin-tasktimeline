@@ -10,6 +10,6 @@ The implemented forecast API covers the next 168 hours. It includes task observa
 
 Calendar projections are rule calculations, not execution guarantees. Jellyfin's local-clock timer arithmetic makes deadlines around clock changes dependent on timer arming. Affected daily/weekly sources remain visible as unsupported with `clockChangeTimingUnknown`; their dated occurrences are withheld. This conservatively covers an offset change within the forecast or preceding rule period (one day for daily rules, seven days for weekly rules).
 
-The normal plugin includes the user-facing timeline. It reads forecasts and native task updates; it has no task-start or schedule-edit controls. Interval deadlines and clock-change uncertainty remain explicit. A public release is a separate action after validation and the outstanding license/feed decisions.
+The normal plugin includes the user-facing timeline. It reads forecasts and native task updates; it has no task-start or schedule-edit controls. Interval deadlines and clock-change uncertainty remain explicit. The project uses GNU GPLv3. A public release is a separate action after validation and installation-feed preparation.
 
 Later editing may include drafts, conflict detection, snapshots, and restore. None is implemented in the initial scaffold. An initial baseline means the user's captured configuration, not factory defaults.
