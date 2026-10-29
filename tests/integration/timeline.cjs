@@ -74,6 +74,28 @@ async function checkContrast(page, root) {
         const leaveHash = (await page.getByRole('link', { name: 'General', exact: true }).getAttribute('href')).split('#')[1];
         await page.waitForFunction(() => ['awaiting-live', 'live'].includes(document.querySelector('[data-timeline]').dataset.liveStatus));
         assert.equal(await page.evaluate(() => window.timelineSubscriptions), 1);
+        assert.equal(await root.locator('#tt-title').innerText(), 'Scheduled Task Timeline');
+        assert.ok(await root.locator('[data-notice]').isHidden());
+        assert.doesNotMatch(await root.locator('[data-generated]').innerText(), /Etc\/UTC/);
+        assert.equal(await root.getByText('Read-only · next 168 hours', { exact: true }).count(), 0);
+        const tabs = root.locator('[data-off-tabs] [role=tab]');
+        if (await tabs.count()) {
+            const reason = await tabs.first().getAttribute('data-id');
+            await tabs.first().click();
+            const firstSource = root.locator('[data-off-calendar] .tt-off-item').first();
+            if (await firstSource.count()) {
+                await firstSource.click();
+                const inspector = await root.locator('.tt-inspector').boundingBox();
+                assert.ok(inspector.y >= 44 && inspector.y < 1100, 'Inspector must remain visible when an undated source is selected');
+            }
+            const sectionBounds = await root.locator('[data-off-section]').boundingBox();
+            assert.ok(sectionBounds.height <= 701);
+            await root.getByRole('button', { name: 'Collapse not on the calendar', exact: true }).click();
+            assert.ok(await root.locator('[data-off-contents]').isHidden());
+            await root.getByRole('button', { name: 'Expand not on the calendar', exact: true }).click();
+            assert.ok(await root.locator('[data-off-contents]').isVisible());
+            assert.equal(await root.locator('[role=tab][aria-selected=true]').getAttribute('data-id'), reason);
+        }
         const native = await page.evaluate(() => window.ApiClient.getScheduledTasks());
         assert.equal(await root.locator('.tt-task-row').count(), native.length);
         await root.getByRole('button', { name: 'Agenda', exact: true }).click();
@@ -127,7 +149,7 @@ async function checkContrast(page, root) {
         assert.equal(await root.locator('[data-off-count]').innerText(), '2');
         assert.equal(await root.locator('.tt-overlap').count(), 2);
         await page.waitForFunction(() => ['awaiting-live', 'live'].includes(document.querySelector('[data-timeline]').dataset.liveStatus));
-        await root.locator('.tt-status').evaluate(el => { window.timelineStatusMutations = 0; window.timelineStatusObserver = new MutationObserver(() => window.timelineStatusMutations++); window.timelineStatusObserver.observe(el, { childList: true, subtree: true, characterData: true }); });
+        await root.locator('[data-notice]').evaluate(el => { window.timelineStatusMutations = 0; window.timelineStatusObserver = new MutationObserver(() => window.timelineStatusMutations++); window.timelineStatusObserver.observe(el, { childList: true, subtree: true, characterData: true }); });
         await page.evaluate(() => window.timelineReceiver({ Data: [{ Id: 'a', State: 'Running', CurrentProgressPercentage: 0 }, { Id: 'b', State: 'Running', CurrentProgressPercentage: null }] }));
         await page.waitForFunction(() => document.querySelectorAll('[data-running] progress').length === 2);
         assert.equal(await root.locator('[data-running] progress').count(), 2);
@@ -153,6 +175,11 @@ async function checkContrast(page, root) {
         await page.setViewportSize({ width: 390, height: 844 });
         await root.getByRole('button', { name: 'Agenda', exact: true }).click();
         assert.ok(await root.locator('[data-agenda-shell]').isVisible());
+        await root.locator('.tt-agenda-item').first().click();
+        await root.locator('[data-detail-drawer][open]').waitFor();
+        assert.ok(await root.locator('.tt-inspector').isHidden());
+        await page.keyboard.press('Escape');
+        assert.ok(await root.locator('[data-detail-drawer]').isHidden());
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
         await page.evaluate(() => window.scrollTo(0, 0));
         await page.screenshot({ path: path.join(output, `synthetic-${info.Version}-mobile.png`), fullPage: true });

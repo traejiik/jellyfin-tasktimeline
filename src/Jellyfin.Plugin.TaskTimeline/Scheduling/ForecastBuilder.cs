@@ -63,9 +63,30 @@ public sealed class ForecastBuilder
         {
             "DailyTrigger" => $"Daily at {time} (server time)",
             "WeeklyTrigger" => $"Weekly on {trigger.DayOfWeek} at {time} (server time)",
-            "IntervalTrigger" => trigger.IntervalTicks is > 0 ? $"Every {TimeSpan.FromTicks(trigger.IntervalTicks.Value):c}; next time unknown" : "Invalid interval",
+            "IntervalTrigger" => trigger.IntervalTicks is > 0 ? IntervalSummary(trigger.IntervalTicks.Value) : "Invalid interval",
             "StartupTrigger" => "At server startup",
             _ => $"Unsupported trigger ({trigger.Type})"
         };
+    }
+
+    private static string IntervalSummary(long ticks)
+    {
+        var interval = TimeSpan.FromTicks(ticks);
+        var parts = new List<string>();
+        foreach (var (count, unit) in new[] { (interval.Days, "day"), (interval.Hours, "hour"), (interval.Minutes, "minute"), (interval.Seconds, "second") })
+        {
+            if (count > 0)
+            {
+                parts.Add($"{count.ToString(CultureInfo.InvariantCulture)} {unit}{(count == 1 ? string.Empty : "s")}");
+            }
+        }
+
+        var milliseconds = (ticks % TimeSpan.TicksPerSecond) / (decimal)TimeSpan.TicksPerMillisecond;
+        if (milliseconds > 0)
+        {
+            parts.Add($"{milliseconds.ToString("0.####", CultureInfo.InvariantCulture)} millisecond{(milliseconds == 1 ? string.Empty : "s")}");
+        }
+
+        return "Every " + (parts.Count == 1 && parts[0].StartsWith("1 ", StringComparison.Ordinal) ? parts[0][2..] : string.Join(", ", parts));
     }
 }
