@@ -6,6 +6,7 @@ Direction B: an open clock ring above three staggered schedule bars. The rounded
 
 | Use | Artwork |
 | --- | --- |
+| README banner, responsive width and 240 px height | `tasktimeline-banner.svg` |
 | Jellyfin plugin catalog, 1600 x 900 | `tasktimeline-card.png` / `.svg` |
 | Square logo with navy background, 1024 x 1024 | `tasktimeline-logo.png` / `.svg` |
 | Transparent stacked logo | `tasktimeline-stacked.svg` |
@@ -48,3 +49,5 @@ The wordmark is based on Nunito Black (weight 1000) with custom letter spacing, 
 The geometry was rendered and inspected twice. Refinements opened the ring-to-bar gap and the Ti pair. The final symbol was inspected in colour, black, white, and at 16, 24, 32, 48 and 64 px. The vector audit found no live text, raster images, unexpanded strokes, or filter/mask dependencies. It reports the intentional gradients and the higher anchor count of outlined wordmarks as warnings.
 
 The reference-library check compared Moment.js and WakaTime clock marks: Task Timeline uses an open ring with external schedule bars rather than a complete circular enclosure. This is a design comparison, not trademark clearance. Printed colour matching and physical production have not been tested; this kit targets digital plugin use.
+
+The README banner uses the existing card artwork inside a full-width navy SVG canvas without an outer viewBox. Its nested card retains its 16:9 viewBox and aspect ratio. This fills the README width at a fixed 240 px height without stretching or cropping the logo; the catalog card remains unchanged.

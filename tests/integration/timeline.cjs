@@ -5,6 +5,17 @@ const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
 
+function trackSubscriptions() {
+    const api = window.ApiClient, subscribe = api.subscribe.bind(api);
+    window.timelineSubscriptions = 0;
+    api.subscribe = (types, callback) => {
+        const tracked = types.includes('ScheduledTasksInfo');
+        if (tracked) { window.timelineSubscriptions++; window.timelineReceiver = callback; }
+        const stop = subscribe(types, callback);
+        return () => { if (tracked) window.timelineSubscriptions--; stop(); };
+    };
+}
+
 async function checkContrast(page, root) {
     await page.keyboard.press('Tab');
     await root.locator('[data-refresh]').focus();
@@ -56,16 +67,7 @@ async function checkContrast(page, root) {
         await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
         if (errors.length) console.log(`Host errors before opening the timeline: ${errors.length}`);
         errors.length = 0;
-        await page.evaluate(() => {
-            const api = window.ApiClient, subscribe = api.subscribe.bind(api);
-            window.timelineSubscriptions = 0;
-            api.subscribe = (types, callback) => {
-                const tracked = types.includes('ScheduledTasksInfo');
-                if (tracked) { window.timelineSubscriptions++; window.timelineReceiver = callback; }
-                const stop = subscribe(types, callback);
-                return () => { if (tracked) window.timelineSubscriptions--; stop(); };
-            };
-        });
+        await page.evaluate(trackSubscriptions);
         const info = await page.evaluate(async () => (await fetch('/System/Info/Public')).json());
         await page.evaluate(() => { location.hash = '/configurationpage?name=taskTimeline'; });
         await page.waitForFunction(() => document.querySelector('[data-timeline]')?.dataset.forecastStatus === 'ready', { timeout: 20000 });
@@ -112,6 +114,50 @@ async function checkContrast(page, root) {
         await root.getByRole('button', { name: 'Category', exact: true }).click();
         const group = root.locator('.tt-category').first();
         await group.click(); assert.equal(await group.getAttribute('aria-expanded'), 'false'); await group.click();
+        const undated = root.locator('.tt-undated-label').first();
+        if (await undated.count()) {
+            const panel = root.locator('[data-week]');
+            const position = () => undated.evaluate(label => {
+                const text = label.getBoundingClientRect(), band = label.parentElement.getBoundingClientRect();
+                const scroll = document.querySelector('[data-week]').getBoundingClientRect();
+                return { left: text.left - scroll.left, center: text.top + text.height / 2 - band.top - band.height / 2,
+                    width: band.width, trackWidth: label.parentElement.parentElement.getBoundingClientRect().width };
+            });
+            await panel.evaluate(el => { el.scrollLeft = 0; });
+            const before = await position();
+            await panel.evaluate(el => { el.scrollLeft = el.scrollWidth; });
+            assert.ok(await panel.evaluate(el => el.scrollLeft > 0));
+            const after = await position();
+            assert.ok(Math.abs(after.left - before.left) < 1, 'Undated text must stay beside the sticky task column');
+            assert.ok(Math.abs(after.center) < 1, 'Undated text must be vertically centered');
+            assert.equal(after.width, after.trackWidth);
+            await panel.evaluate(el => { el.scrollLeft = 0; });
+        }
+        for (const width of [820, 430]) {
+            await page.setViewportSize({ width, height: 1180 });
+            assert.equal(await root.locator('[data-action="open-details"]').count(), 0);
+            const primary = await root.locator('.tt-summary-card').first().boundingBox();
+            const running = await root.locator('.tt-running-card').boundingBox();
+            assert.equal(primary.width, running.width);
+            if (width === 820) assert.equal(primary.y, running.y);
+            else {
+                assert.ok(running.y >= primary.y + primary.height);
+                const select = root.getByRole('combobox', { name: 'Group by', exact: true });
+                await select.selectOption('time');
+                assert.equal(await root.locator('.tt-category').count(), 0);
+                await root.getByRole('button', { name: 'Refresh forecast', exact: true }).click();
+                await page.waitForFunction(() => document.querySelector('[data-timeline]').dataset.forecastStatus === 'ready');
+                assert.equal(await select.inputValue(), 'time');
+                await select.selectOption('category');
+            }
+            const task = root.locator('.tt-task-name').first();
+            await task.click();
+            await root.locator('[data-detail-drawer][open]').waitFor();
+            await root.getByRole('button', { name: 'Close task details', exact: true }).click();
+            assert.ok(await task.evaluate(el => document.activeElement === el));
+            assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+        }
+        await page.setViewportSize({ width: 1440, height: 1100 });
         await page.evaluate(() => window.scrollTo(0, 0));
         await page.screenshot({ path: path.join(output, `real-${info.Version}-desktop-dark.png`), fullPage: true });
         console.log(`PASS: Jellyfin ${info.Version} normal page, authenticated modules, real tasks, view/group controls and retained selection`);
@@ -212,10 +258,16 @@ async function checkContrast(page, root) {
         await page.reload();
         await page.waitForFunction(() => document.querySelector('[data-timeline]')?.dataset.forecastStatus === 'stale');
         assert.ok(await root.locator('[data-body]').isHidden());
+        // Reload clears the earlier instrumentation; no live monitor starts until Retry succeeds.
+        await page.evaluate(trackSubscriptions);
         mode = 'fixture'; await root.getByRole('button', { name: 'Retry', exact: true }).click();
         await page.waitForFunction(() => document.querySelector('[data-timeline]').dataset.forecastStatus === 'ready');
-        await page.evaluate(hash => { window.savedTimelineStatus = window.ApiClient._sdk.webSocket.onStatusChange; window.ApiClient._sdk.webSocket.onStatusChange = undefined; location.hash = hash; }, leaveHash);
+        // Change host capabilities only after the preceding page has released its
+        // subscription; otherwise this fixture races its in-flight snapshot setup.
+        await page.evaluate(hash => { location.hash = hash; }, leaveHash);
         await root.waitFor({ state: 'hidden' });
+        await page.waitForFunction(() => window.timelineSubscriptions === 0);
+        await page.evaluate(() => { window.savedTimelineStatus = window.ApiClient._sdk.webSocket.onStatusChange; window.ApiClient._sdk.webSocket.onStatusChange = undefined; });
         await page.evaluate(() => { location.hash = '/configurationpage?name=taskTimeline'; });
         await page.waitForFunction(() => document.querySelector('[data-timeline]')?.dataset.liveStatus === 'unavailable' && document.querySelector('[data-timeline]').dataset.forecastStatus === 'ready');
         assert.ok(await root.locator('[data-body]').isVisible());

@@ -13,13 +13,15 @@ docker inspect jellytest --format '{{json .Mounts}}'
 
 Inspect the server version and mounts before choosing a deployment path. Never assume a container path or expose API keys in logs. Use Jellytest for runtime checks; production deployment is a separate explicit action.
 
-For a manual shell build:
+For a local installable build:
 
 ```sh
-dotnet publish src/Jellyfin.Plugin.TaskTimeline/Jellyfin.Plugin.TaskTimeline.csproj --configuration Release --output artifacts/publish
+python3 packaging/release.py local --output artifacts/task-timeline
 ```
 
-Deploy only the plugin DLL into its own folder under Jellytest's actual plugin mount and restart Jellytest. Do not copy host framework assemblies. Confirm the plugin is listed and loads without errors. The normal build includes the Task Timeline dashboard page and forecast API; see [UI behavior](ui.md).
+The helper computes the nearest reachable stable tag and commit distance, injects the numeric and informational versions into `dotnet publish`, and collects the DLL, `meta.json`, `tasktimeline-card.png` and `LICENSE.md`. For example, three commits after `v0.1.0` produces `0.1.0.3`; the exact tag produces `0.1.0.0`. Metadata and DLL version properties are stamped together. Before a first tag, the base is `0.0.0` and the fourth component counts repository commits. Source archives without Git metadata use `0.0.0.0` with an explicit unknown informational version. Shallow history must be completed before deriving a version.
+
+Copy all four files into the plugin's own folder under Jellytest's actual plugin mount and restart Jellytest. Do not copy host framework assemblies. Confirm the plugin is listed and loads without errors. The normal build includes the Task Timeline dashboard page and forecast API; see [features and installation](../README.md).
 
 ## Forecast API
 
@@ -45,12 +47,12 @@ AGENTS.md and CLAUDE.md are intentionally local and ignored. All Superpowers wor
 
 ## Releases
 
-Keep source versions at `0.0.0` and assembly/file versions at `0.0.0.0`. To publish a verified stable release, tag a commit in `development` history with `vMAJOR.MINOR.PATCH`, then push that tag. Choose the version deliberately; creating the repository does not publish a plugin release.
+Keep source version fields at `0.0.0` and assembly/file fields at `0.0.0.0`; these are placeholders, not the versions of packaged builds. To publish a verified stable release, tag a commit in `development` history with `vMAJOR.MINOR.PATCH`, then push that tag. Choose the version deliberately; creating the repository does not publish a plugin release.
 
 The source manifest starts with an empty `versions` list; only release packaging creates a version entry. The target ABI is derived from the pinned Jellyfin.Controller package version in the C# project, independently of release history.
 
-The workflow validates the tag, verifies that it belongs to development history, checks formatting, builds with a derived four-part version (for example, `v0.1.0` becomes `0.1.0.0`), and packages the plugin DLL plus `meta.json`. It publishes the ZIP, SHA-256 checksum, and generated manifest to GitHub Releases using the workflow token. No deploy key, feed branch, or version-bump commit is needed.
+The workflow validates the tag, verifies that it belongs to development history, checks formatting, builds with a derived four-part version (for example, `v0.1.0` becomes `0.1.0.0`), and packages the plugin DLL, `meta.json`, `tasktimeline-card.png` and `LICENSE.md`. The metadata’s relative `imagePath` points to the bundled card for manual installations. It publishes the ZIP, SHA-256 checksum, and generated manifest to GitHub Releases using the workflow token. No deploy key, feed branch, or version-bump commit is needed.
 
-The stable installation feed is `https://github.com/traejiik/jellyfin-tasktimeline/releases/latest/download/manifest.json`. It contains only that release. Publish tags in increasing version order; each successful release becomes latest. Prerelease tags are not supported in the initial pipeline. Rolling back means deliberately installing an older release package, rather than expecting older entries in the latest feed.
+The recommended installation feed is the combined TJK Plugins repository at `https://raw.githubusercontent.com/traejiik/jellyfin-tjk-plugins/main/manifest.json`. The release workflow requests a refresh of that repository when its dispatch token is configured; otherwise it refreshes on its own schedule. Each Task Timeline release also publishes a manifest containing that release alone, available through `https://github.com/traejiik/jellyfin-tasktimeline/releases/latest/download/manifest.json`. Publish tags in increasing version order; each successful release becomes latest. Prerelease tags are not supported in the initial pipeline.
 
-Before tagging a functional release, validate its intended behavior on Jellytest. CI compilation is not proof of runtime compatibility. No license has been selected yet; choose one before inviting external contributions or publishing the first plugin release.
+Before tagging a functional release, validate its intended behavior on Jellytest. CI compilation is not proof of runtime compatibility. The project uses GNU GPLv3; preserve the license and copyright notices and make the corresponding release source available to recipients.
