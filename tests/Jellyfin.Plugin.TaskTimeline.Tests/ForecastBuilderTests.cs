@@ -15,6 +15,22 @@ public class ForecastBuilderTests
 
     private static readonly DateTimeOffset Now = DateTimeOffset.Parse("2026-10-28T10:00:00Z");
 
+    [Theory]
+    [InlineData(864000000000L, "Every day")]
+    [InlineData(432000000000L, "Every 12 hours")]
+    [InlineData(216000000000L, "Every 6 hours")]
+    [InlineData(6048000000000L, "Every 7 days")]
+    [InlineData(936000000000L, "Every 1 day, 2 hours")]
+    [InlineData(600000000L, "Every minute")]
+    [InlineData(5000L, "Every 0.5 milliseconds")]
+    public void DescribesIntervalRulesInReadableWords(long ticks, string expected)
+    {
+        var response = new ForecastBuilder().Build([Task("a", new TriggerInput("IntervalTrigger", IntervalTicks: ticks))], Now, TimeZoneInfo.Utc, default);
+        Assert.Equal(expected, response.Triggers.Single().Summary);
+        Assert.Equal("timingUnknown", response.Triggers.Single().ProjectionStatus);
+        Assert.Empty(response.Occurrences);
+    }
+
     [Fact]
     public void PreservesUnknownSourcesAndTasksWithoutTriggers()
     {
