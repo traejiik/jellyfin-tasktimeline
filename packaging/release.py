@@ -14,7 +14,7 @@ import xml.etree.ElementTree as ET
 DLL = 'Jellyfin.Plugin.TaskTimeline.dll'
 ROOT = Path(__file__).resolve().parents[1]
 PROJECT = ROOT / 'src/Jellyfin.Plugin.TaskTimeline/Jellyfin.Plugin.TaskTimeline.csproj'
-ARTWORK = 'tasktimeline-horizontal.svg'
+ARTWORK = 'tasktimeline-catalog.svg'
 
 
 def version_from_tag(tag):

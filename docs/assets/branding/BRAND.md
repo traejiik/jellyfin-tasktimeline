@@ -8,7 +8,8 @@ Direction B: an open clock ring above three staggered schedule bars. The rounded
 | --- | --- |
 | README, full-width navy banner at 240 px high | `tasktimeline-banner.svg` |
 | Navy-backed card, 1600 x 900 | `tasktimeline-card.svg` |
-| Jellyfin catalog and bundled manual/local install artwork | `tasktimeline-horizontal.svg` |
+| Jellyfin catalog and bundled manual/local install artwork, padded horizontal logo on a 1600 x 900 navy card | `tasktimeline-catalog.svg` |
+| Transparent horizontal logo master | `tasktimeline-horizontal.svg` |
 | Square logo with navy background, 1024 x 1024 | `tasktimeline-logo.svg` |
 | Transparent stacked logo | `tasktimeline-stacked.svg` |
 | Wordmark only | `tasktimeline-wordmark.svg` |
@@ -18,7 +19,7 @@ Direction B: an open clock ring above three staggered schedule bars. The rounded
 | Unused raster exports, favicons, touch icon and monochrome variants | `generated/` (local, ignored) |
 | Visual QA and context previews | `generated/brand-preview.png`, `generated/brand-preview.html`, `generated/brand-presentation.html` (local, ignored) |
 
-All supplied files are preserved under `docs/assets/branding/`. Core SVG artwork, this guide and `OFL-Nunito.txt` remain tracked. Unused exports and preview files live in the ignored `generated/` directory; they are not included in a fresh clone. The PNG card is unused now that the catalog and packages use the horizontal SVG.
+All supplied files are preserved under `docs/assets/branding/`. Core SVG artwork, this guide and `OFL-Nunito.txt` remain tracked. Unused exports and preview files live in the ignored `generated/` directory; they are not included in a fresh clone. The original PNG card is unused; the catalog and packages use `tasktimeline-catalog.svg`.
 
 SVG masters contain outlined lettering and filled shapes. No installed fonts, embedded raster artwork, masks, filters, or outline-stroke operation is required to display them. Raster exports use the SVG master as their source.
 
@@ -35,7 +36,7 @@ The wordmark is based on Nunito Black (weight 1000) with custom letter spacing, 
 
 ## Usage
 
-- Use the horizontal SVG for the Jellyfin catalog and install packages. Use the navy banner with the stacked logo for the README.
+- Use `tasktimeline-catalog.svg` for the Jellyfin catalog and install packages. Its 16:9 navy canvas contains the unchanged horizontal logo at 75% of the card width, centered with padding. The raw horizontal master is too wide for Jellyfin’s desktop card crop. Use the navy banner with the stacked logo for the README.
 - Prefer the full symbol at 48 px and above. Use the simplified two-bar symbol below 48 px; 24 px is preferred for UI use, while the 16 px favicon retains only the essential clock-and-bars reading.
 - Use the horizontal lockup at 240 px wide or larger, and the stacked lockup at 160 px or larger. Use the standalone symbol below those sizes.
 - Leave at least one schedule-bar thickness of clear space around the symbol, approximately 24 units on the 256-unit master grid, outside its visible shape. Built-in artboard padding is not the complete clear-space allowance.

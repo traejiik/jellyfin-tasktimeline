@@ -47,7 +47,7 @@ The following are needed for the plugin to run:
 [See the official Jellyfin documentation for plugin locations and installation instructions](https://jellyfin.org/docs/general/server/plugins/#manual).
 
 1. Download the plugin ZIP from a [release](https://github.com/traejiik/jellyfin-tasktimeline/releases) compatible with your Jellyfin version.
-2. Stop Jellyfin and extract `Jellyfin.Plugin.TaskTimeline.dll`, `meta.json`, `tasktimeline-horizontal.svg` and `LICENSE.md` into a dedicated `plugins/task-timeline` folder. When updating, replace the existing plugin files rather than leaving a second copy in another folder.
+2. Stop Jellyfin and extract `Jellyfin.Plugin.TaskTimeline.dll`, `meta.json`, `tasktimeline-catalog.svg` and `LICENSE.md` into a dedicated `plugins/task-timeline` folder. When updating, replace the existing plugin files rather than leaving a second copy in another folder.
 3. Start Jellyfin again.
 4. Open **Task Timeline** in the dashboard’s plugin section. The current plugin is read-only and does not require task settings to be configured.
 
@@ -61,7 +61,7 @@ You need git, Python 3.10 or newer and the [.NET 10 SDK](https://dotnet.microsof
    python3 packaging/release.py local --output artifacts/task-timeline
    ```
 
-   This runs the .NET SDK with a Git-derived build version and writes `Jellyfin.Plugin.TaskTimeline.dll`, `meta.json`, `tasktimeline-horizontal.svg` and `LICENSE.md` to `artifacts/task-timeline/`. The metadata points Jellyfin to the bundled horizontal logo, so the installed plugin has its artwork even without a catalogue download.
+   This runs the .NET SDK with a Git-derived build version and writes `Jellyfin.Plugin.TaskTimeline.dll`, `meta.json`, `tasktimeline-catalog.svg` and `LICENSE.md` to `artifacts/task-timeline/`. The metadata points Jellyfin to the bundled catalog card, so the installed plugin has its artwork even without a catalogue download.
 
 2. Stop Jellyfin, copy all four files from `artifacts/task-timeline/` into a dedicated `plugins/task-timeline` folder, then start Jellyfin again. Do not copy assemblies supplied by Jellyfin.
 

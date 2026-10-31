@@ -4,7 +4,7 @@
     "name": "Task Timeline",
     "category": "administration",
     "owner": "traejiik",
-    "imageUrl": "https://raw.githubusercontent.com/traejiik/jellyfin-tasktimeline/development/docs/assets/branding/tasktimeline-horizontal.svg",
+    "imageUrl": "https://raw.githubusercontent.com/traejiik/jellyfin-tasktimeline/development/docs/assets/branding/tasktimeline-catalog.svg",
     "description": "Visualise scheduled tasks on a timeline",
     "overview": "See upcoming scheduled tasks, their configured triggers, and recent run information in your Jellyfin dashboard.",
     "versions": []
