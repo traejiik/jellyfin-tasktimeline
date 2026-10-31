@@ -23,3 +23,6 @@
 .env
 .env.*
 *.user
+
+# Optional branding exports and local previews
+/docs/assets/branding/generated/

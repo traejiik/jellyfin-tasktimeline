@@ -14,7 +14,7 @@ import xml.etree.ElementTree as ET
 DLL = 'Jellyfin.Plugin.TaskTimeline.dll'
 ROOT = Path(__file__).resolve().parents[1]
 PROJECT = ROOT / 'src/Jellyfin.Plugin.TaskTimeline/Jellyfin.Plugin.TaskTimeline.csproj'
-CARD = 'tasktimeline-card.png'
+ARTWORK = 'tasktimeline-horizontal.svg'
 
 
 def version_from_tag(tag):
@@ -78,7 +78,7 @@ def target_abi():
 
 
 def distribution_files(publish):
-    files = {DLL: publish / DLL, 'LICENSE.md': ROOT / 'LICENSE.md', CARD: ROOT / 'docs/assets' / CARD}
+    files = {DLL: publish / DLL, 'LICENSE.md': ROOT / 'LICENSE.md', ARTWORK: ROOT / 'docs/assets/branding' / ARTWORK}
     for name, source in files.items():
         if not source.is_file():
             raise FileNotFoundError(f'Missing distribution file {name}: {source}')
@@ -88,7 +88,7 @@ def distribution_files(publish):
 def plugin_metadata(plugin, release):
     metadata = {key: plugin[key] for key in ('guid', 'name', 'description', 'overview', 'owner', 'category')}
     metadata.update(release)
-    metadata.update(status='Active', autoUpdate=True, assemblies=[DLL], imagePath=CARD)
+    metadata.update(status='Active', autoUpdate=True, assemblies=[DLL], imagePath=ARTWORK)
     return metadata
 
 

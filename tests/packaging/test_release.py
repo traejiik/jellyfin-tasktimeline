@@ -51,16 +51,17 @@ class ReleaseTests(unittest.TestCase):
             self.assertEqual(hashlib.md5(archive.read_bytes()).hexdigest(), entry['checksum'])
             self.assertTrue(entry['sourceUrl'].endswith('/v1.2.3/tasktimeline_1.2.3.0.zip'))
             self.assertEqual(json.loads(template)[0]['imageUrl'], manifest[0]['imageUrl'])
+            self.assertTrue(manifest[0]['imageUrl'].endswith('/docs/assets/branding/tasktimeline-horizontal.svg'))
             with zipfile.ZipFile(archive) as bundle:
-                self.assertEqual({dll, 'meta.json', 'LICENSE.md', 'tasktimeline-card.png'}, set(bundle.namelist()))
+                self.assertEqual({dll, 'meta.json', 'LICENSE.md', 'tasktimeline-horizontal.svg'}, set(bundle.namelist()))
                 self.assertEqual((ROOT / 'LICENSE.md').read_bytes(), bundle.read('LICENSE.md'))
                 metadata = json.loads(bundle.read('meta.json'))
                 self.assertEqual(manifest[0]['guid'], metadata['guid'])
                 self.assertEqual(entry['changelog'], metadata['changelog'])
                 self.assertEqual('1.2.3.0', metadata['version'])
                 self.assertEqual([dll], metadata['assemblies'])
-                self.assertEqual('tasktimeline-card.png', metadata['imagePath'])
-                self.assertEqual((ROOT / 'docs/assets/tasktimeline-card.png').read_bytes(), bundle.read(metadata['imagePath']))
+                self.assertEqual('tasktimeline-horizontal.svg', metadata['imagePath'])
+                self.assertEqual((ROOT / 'docs/assets/branding/tasktimeline-horizontal.svg').read_bytes(), bundle.read(metadata['imagePath']))
         self.assertEqual(template, (ROOT / 'manifest.json').read_bytes())
 
     def test_local_install_folder_uses_the_compiled_git_version_and_artwork(self):
@@ -72,15 +73,15 @@ class ReleaseTests(unittest.TestCase):
             (publish / dll).write_bytes(b'local plugin fixture')
             output = root / 'install'
             self.release.local_package(ROOT / 'manifest.json', publish, output, '1.2.3.4', '1.2.3+4.gabcdef.dirty')
-            self.assertEqual({dll, 'meta.json', 'LICENSE.md', 'tasktimeline-card.png'},
+            self.assertEqual({dll, 'meta.json', 'LICENSE.md', 'tasktimeline-horizontal.svg'},
                              {item.name for item in output.iterdir()})
             metadata = json.loads((output / 'meta.json').read_text())
             self.assertEqual('1.2.3.4', metadata['version'])
             self.assertIn('1.2.3+4.gabcdef.dirty', metadata['changelog'])
             self.assertEqual('12.2.0.0', metadata['targetAbi'])
             self.assertEqual([dll], metadata['assemblies'])
-            self.assertEqual('tasktimeline-card.png', metadata['imagePath'])
-            self.assertEqual((ROOT / 'docs/assets/tasktimeline-card.png').read_bytes(),
+            self.assertEqual('tasktimeline-horizontal.svg', metadata['imagePath'])
+            self.assertEqual((ROOT / 'docs/assets/branding/tasktimeline-horizontal.svg').read_bytes(),
                              (output / metadata['imagePath']).read_bytes())
 
     def test_describe_versions_include_distance_and_dirty_information(self):
