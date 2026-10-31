@@ -1,8 +1,44 @@
 <div id="taskTimeline" data-role="page" class="page type-interior pluginConfigurationPage" data-controller="__plugin/taskTimelineJs">
 <div data-role="content">
 <style>
+/*
+ * Shared design tokens for AniDōki and Task Timeline.
+ *
+ * Each plugin lives in its own repository and is built on its own, so neither can import this file.
+ * The source copy lives in jellyfin-tjk-plugins/design/tokens.css (kept local). Copy it verbatim:
+ * into Anidoki.css in jellyfin-anidoki, and into the <style> block of timeline.html in
+ * jellyfin-tasktimeline. Change the source first, then copy it to both.
+ *
+ * Only theme sources, status colours and radii are shared. Fills, typography, focus rings
+ * and layout stay with each plugin; the design kit's brand.css shows the family defaults for those.
+ *
+ * The selector lists every plugin root. A new plugin adds its root class to the source, then the file
+ * is copied to every plugin again. .tjk is the root used by the design kit's preview pages.
+ */
+:where(.anidoki, .tt, .tjk) {
+    /* Host theme first (custom themes such as ElegantFin), then Jellyfin's palette, then stock defaults. */
+    --tjk-text: var(--textColor, var(--jf-palette-text-primary, #f5f5f5));
+    --tjk-muted: var(--dimTextColor, var(--jf-palette-text-secondary, #b9b9b9));
+    --tjk-accent: var(--accentColor, var(--jf-palette-primary-main, #00a4dc));
+    --tjk-action: var(--btnSubmitColor, color-mix(in srgb, var(--tjk-accent) 75%, #000));
+    --tjk-on-accent: #fff;
+    /* Borders: legacy theme border, then Jellyfin's divider (stock and palette themes such as Netflin), then 18% text. */
+    --tjk-edge: var(--borderColor, var(--jf-palette-divider, color-mix(in srgb, var(--tjk-text) 18%, transparent)));
+
+    --tjk-success: var(--jf-palette-success-light, #a2d9ae);
+    --tjk-warning: var(--jf-palette-warning-light, #e5b96c);
+    --tjk-error: var(--jf-palette-error-light, #ffb4ab);
+
+    /* xs: timeline marks and keys. sm: checkboxes, segment buttons, counts.
+       md: buttons, inputs, nested containers. lg: panels, cards, shells. */
+    --tjk-radius-xs: 3px;
+    --tjk-radius-sm: 6px;
+    --tjk-radius-md: 10px;
+    --tjk-radius-lg: 14px;
+    --tjk-radius-pill: 999px;
+}
 #taskTimeline>[data-role=content]{overflow:visible}
-.tt{--tt-line:color-mix(in srgb,currentColor 12%,transparent);--tt-muted:color-mix(in srgb,currentColor 68%,transparent);--tt-surface:color-mix(in srgb,currentColor 3%,transparent);--tt-raised:color-mix(in srgb,currentColor 8%,transparent);--tt-accent:#00a4dc;--tt-focus:color-mix(in srgb,var(--tt-accent) 70%,currentColor 30%);--tt-warn:#f0883e;max-width:1360px;margin:0 auto;padding:28px 32px 80px;font:inherit;line-height:1.6}
+.tt{color:var(--tjk-text);--tt-line:color-mix(in srgb,currentColor 12%,transparent);--tt-muted:var(--tjk-muted);--tt-surface:color-mix(in srgb,currentColor 3%,transparent);--tt-raised:color-mix(in srgb,currentColor 8%,transparent);--tt-accent:var(--tjk-accent);--tt-focus:color-mix(in srgb,var(--tt-accent) 70%,currentColor 30%);--tt-warn:var(--tjk-warning);max-width:1360px;margin:0 auto;padding:28px 32px 80px;font:inherit;line-height:1.6}
 .tt *{box-sizing:border-box}
 .tt [hidden]{display:none!important}
 .tt button{font:inherit;color:inherit;cursor:pointer}
@@ -17,22 +53,24 @@
 .tt-muted,.tt-reason{color:var(--tt-muted)}
 .tt-small{font-size:.8rem}
 .tt-header{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding-bottom:24px;border-bottom:1px solid var(--tt-line)}
+.tt-header>*{min-height:44px}
 .tt-identity,.tt-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .tt-identity{font-size:1rem}
 .tt-logo{width:28px;height:28px}
 .tt-intro{padding:32px 0;max-width:760px}
 .tt-intro h1{margin:14px 0}
 .tt-intro p{color:var(--tt-muted);font-size:.95rem;max-width:66ch}
-.tt-tag{display:inline-flex;align-items:center;padding:2px 9px;min-height:23px;border-radius:20px;font-size:.65rem;letter-spacing:.04em;background:var(--tt-raised);line-height:1.5}
+.tt-tag{display:inline-flex;align-items:center;padding:2px 9px;min-height:23px;border-radius:var(--tjk-radius-pill);font-size:.65rem;letter-spacing:.04em;background:var(--tt-raised);line-height:1.5}
 .tt-blue{color:inherit;background:color-mix(in srgb,var(--tt-accent) 15%,transparent)}
 .tt-warn{background:color-mix(in srgb,var(--tt-warn) 18%,transparent);color:inherit}
 .tt-event{background:color-mix(in srgb,#e8c468 16%,transparent)}
 .tt-tags{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.tt-refresh{display:inline-flex;align-items:center;gap:12px;min-height:40px;padding:8px 16px;border:1px solid var(--tt-line);border-radius:6px;background:var(--tt-raised)}
-.tt-notice{font-size:.8rem;margin-top:12px!important;padding:10px 12px;border:1px solid var(--tt-line);border-radius:6px;color:var(--tt-muted)}
+.tt-refresh svg{width:18px;height:18px;flex:0 0 18px}
+.tt-refresh{display:inline-flex;align-items:center;gap:12px;min-height:44px;padding:8px 16px;border:1px solid var(--tt-line);border-radius:var(--tjk-radius-md);background:var(--tt-raised)}
+.tt-notice{font-size:.8rem;margin-top:12px!important;padding:10px 12px;border:1px solid var(--tt-line);border-radius:var(--tjk-radius-md);color:var(--tt-muted)}
 .tt-zone-warning{border:1px solid var(--tt-line);padding:12px;margin-top:12px}
 .tt-summary{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:32px}
-.tt-summary-card{border:1px solid var(--tt-line);border-radius:9px;background:var(--tt-surface);padding:20px 24px;flex:1 1 180px;min-width:0;display:flex;flex-direction:column;gap:8px}
+.tt-summary-card{border:1px solid var(--tt-line);border-radius:var(--tjk-radius-lg);background:var(--tt-surface);padding:20px 24px;flex:1 1 180px;min-width:0;display:flex;flex-direction:column;gap:8px}
 .tt-summary-card:first-child{flex:2 1 300px}
 .tt-eyebrow{font-family:ui-monospace,monospace;text-transform:uppercase;letter-spacing:.08em;font-size:.68rem!important;font-weight:400!important;color:var(--tt-muted)}
 .tt-value{font-size:1.9rem;line-height:1.2;font-weight:400}
@@ -45,12 +83,12 @@
 .tt-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start}
 .tt-main{min-width:0}
 .tt-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px}
-.tt-segment{display:inline-flex;padding:3px;background:var(--tt-surface);border:1px solid var(--tt-line);border-radius:8px}
-.tt-segment button{min-height:36px;padding:0 14px;border:0;border-radius:5px;background:transparent;color:var(--tt-muted);font-size:.8rem}
+.tt-segment{display:inline-flex;padding:3px;background:var(--tt-surface);border:1px solid var(--tt-line);border-radius:var(--tjk-radius-md)}
+.tt-segment button{min-height:36px;padding:0 14px;border:0;border-radius:var(--tjk-radius-sm);background:transparent;color:var(--tt-muted);font-size:.8rem}
 .tt-segment button[aria-pressed=true]{background:var(--tt-raised);color:inherit}
 .tt-group-controls{display:flex;align-items:center;gap:10px;font-size:.8rem}
-.tt-shell{padding:5px;border:1px solid var(--tt-line);border-radius:14px;background:var(--tt-surface)}
-.tt-panel{border:1px solid var(--tt-line);border-radius:9px;background:inherit}
+.tt-shell{padding:5px;border:1px solid var(--tt-line);border-radius:var(--tjk-radius-lg);background:var(--tt-surface)}
+.tt-panel{border:1px solid var(--tt-line);border-radius:var(--tjk-radius-md);background:inherit}
 .tt-scroll{max-height:880px;overflow:auto;overscroll-behavior:contain}
 .tt-week-content{min-width:980px}
 .tt-week-header,.tt-task-row{display:grid;grid-template-columns:264px minmax(0,1fr)}
@@ -74,20 +112,20 @@
 .tt-category .tt-tag{margin-left:auto}
 .tt-category .tt-mono{font-size:.68rem;color:var(--tt-muted)}
 .tt-mark{position:absolute;height:24px;border:0;background:transparent;padding:6px 0;z-index:1;text-align:left}
-.tt-mark-glyph{display:block;height:12px;min-width:6px;border-radius:3px;background:var(--tt-accent);color:#101010;font:700 10px/12px ui-monospace,monospace;text-align:center}
+.tt-mark-glyph{display:block;height:12px;min-width:6px;border-radius:var(--tjk-radius-xs);background:var(--tt-accent);color:#101010;font:700 10px/12px ui-monospace,monospace;text-align:center}
 .tt-mark.tt-pin .tt-mark-glyph{width:6px}
 .tt-mark.tt-overlap .tt-mark-glyph{background:var(--tt-warn);min-width:10px}
 .tt-mark:hover .tt-mark-glyph{outline:1px solid currentColor}
 .tt-undated-band{position:absolute;inset:0;display:flex;align-items:center;background:var(--tt-surface);border-block:1px dashed var(--tt-line);pointer-events:none}
 [data-week]{container-type:inline-size}
 .tt-undated-label{position:sticky;left:264px;max-width:calc(100cqi - 264px);padding:10px 12px;text-align:left;overflow-wrap:anywhere;font:11px/1.5 ui-monospace,monospace;color:var(--tt-muted)}
-.tt-legend{margin:16px 0 24px;padding:16px 20px;border:1px solid var(--tt-line);border-radius:8px;background:var(--tt-surface)}
+.tt-legend{margin:16px 0 24px;padding:16px 20px;border:1px solid var(--tt-line);border-radius:var(--tjk-radius-lg);background:var(--tt-surface)}
 .tt-legend h3{margin-bottom:12px}
 .tt-legend ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 24px;list-style:none;padding:0;margin:0}
 .tt-legend li{display:flex;align-items:flex-start;gap:10px;font-size:.75rem;min-width:0}
 .tt-legend li>span{display:flex;flex-direction:column;gap:3px}
 .tt-legend li>span>span{color:var(--tt-muted);font-size:.7rem}
-.tt-key{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:18px;height:10px;border-radius:2px;background:var(--tt-accent);margin-top:5px;font:700 9px/1 ui-monospace,monospace;color:#101010}
+.tt-key{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:18px;height:10px;border-radius:var(--tjk-radius-xs);background:var(--tt-accent);margin-top:5px;font:700 9px/1 ui-monospace,monospace;color:#101010}
 .tt-key-overlap{background:var(--tt-warn)}
 .tt-key-pin{width:6px;height:12px;margin-inline:6px}
 .tt-key-hatch{color:inherit;height:14px;background:repeating-linear-gradient(135deg,transparent,transparent 3px,var(--tt-muted) 3px,var(--tt-muted) 4px);border:1px solid var(--tt-line)}
@@ -113,7 +151,7 @@
 .tt-detail dd{margin:0;font-family:ui-monospace,monospace;font-size:.75rem}
 .tt-detail-entry{border-top:1px solid var(--tt-line);padding:10px 0;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
 .tt-detail-entry>strong{font-size:.85rem}
-.tt-technical{width:100%;font-size:.75rem;color:var(--tt-muted);border:1px solid var(--tt-line);border-radius:6px;background:var(--tt-surface)}
+.tt-technical{width:100%;font-size:.75rem;color:var(--tt-muted);border:1px solid var(--tt-line);border-radius:var(--tjk-radius-md);background:var(--tt-surface)}
 .tt-technical summary{cursor:pointer;min-height:36px;padding:8px 10px}
 .tt-technical-content{display:grid;gap:12px;padding:12px;border-top:1px solid var(--tt-line)}
 .tt-technical-content code{display:block;font-size:.7rem;overflow-wrap:anywhere;margin-top:4px}
@@ -148,8 +186,8 @@
 .tt-summary-card [data-next-names]{overflow-wrap:anywhere}
 .tt-week-header,.tt-task-name,.tt-task-heading,.tt-detail-drawer,.tt-drawer-header{background-color:var(--tt-header-bg,transparent);background-image:var(--tt-header-image,none);background-size:var(--tt-header-size,cover);background-position:var(--tt-header-position,center);background-repeat:var(--tt-header-repeat,no-repeat);background-attachment:fixed}
 .tt-inspector{position:sticky;top:72px;max-height:calc(100svh - 160px);overflow:auto;overscroll-behavior:contain}
-.tt-fold{border:1px solid var(--tt-line);border-radius:5px;padding:6px 11px;background:var(--tt-surface);min-height:34px;font-size:.75rem}
-.tt-off-section{margin-top:28px;border:1px solid var(--tt-line);border-radius:8px;background:var(--tt-surface);display:flex;flex-direction:column;max-height:min(700px,75svh);overflow:hidden}
+.tt-fold{border:1px solid var(--tt-line);border-radius:var(--tjk-radius-sm);padding:6px 11px;background:var(--tt-surface);min-height:34px;font-size:.75rem}
+.tt-off-section{margin-top:28px;border:1px solid var(--tt-line);border-radius:var(--tjk-radius-lg);background:var(--tt-surface);display:flex;flex-direction:column;max-height:min(700px,75svh);overflow:hidden}
 .tt-off-header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:16px;padding:20px 24px;flex-shrink:0}
 .tt-off-header p{font-size:.8rem;margin-top:6px}
 .tt-off-actions{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap}
@@ -157,7 +195,7 @@
 .tt-off-tabs{display:flex;gap:22px;overflow:auto;flex-shrink:0;border-bottom:1px solid var(--tt-line);padding:0 24px}
 .tt-off-tab{border:0;border-bottom:2px solid transparent;border-radius:0;padding:10px 0 12px;background:transparent;white-space:nowrap;min-height:44px;font-size:.8rem;color:var(--tt-muted)!important}
 .tt-off-tab[aria-selected=true]{border-bottom-color:currentColor;color:inherit!important}
-.tt-tab-count{display:inline-flex;align-items:center;justify-content:center;min-width:22px;min-height:20px;padding:1px 5px;margin-left:7px;border-radius:5px;background:var(--tt-raised);font-size:.68rem}
+.tt-tab-count{display:inline-flex;align-items:center;justify-content:center;min-width:22px;min-height:20px;padding:1px 5px;margin-left:7px;border-radius:var(--tjk-radius-sm);background:var(--tt-raised);font-size:.68rem}
 .tt-off-tab[aria-selected=true] .tt-tab-count{background:color-mix(in srgb,currentColor 16%,transparent)}
 .tt-off-explanation{padding:14px 24px;font-size:.8rem;flex-shrink:0;max-width:80ch}
 .tt-off-list{padding:0 24px;overflow:auto;overscroll-behavior:contain;min-height:0}
@@ -176,8 +214,8 @@ html:has(.tt-detail-drawer[open]){overflow:hidden;scrollbar-gutter:stable}
 .tt-icon-button:hover{background:var(--tt-raised)}
 .tt-icon-button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 [data-action="off-toggle"][aria-expanded=true] svg{transform:rotate(180deg)}
-.tt-group-picker{display:none;position:relative;align-items:center;padding:3px;border:1px solid var(--tt-line);border-radius:8px;background:var(--tt-surface)}
-.tt-group-select{appearance:none;font:inherit;color:inherit;background:transparent;border:0;border-radius:5px;min-height:36px;padding:0 34px 0 12px;max-width:100%;cursor:pointer}
+.tt-group-picker{display:none;position:relative;align-items:center;padding:3px;border:1px solid var(--tt-line);border-radius:var(--tjk-radius-md);background:var(--tt-surface)}
+.tt-group-select{appearance:none;font:inherit;color:inherit;background:transparent;border:0;border-radius:var(--tjk-radius-sm);min-height:36px;padding:0 34px 0 12px;max-width:100%;cursor:pointer}
 .tt-group-select:focus-visible{outline:2px solid var(--tt-focus);outline-offset:2px}
 .tt-group-picker svg{position:absolute;right:12px;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
 .tt-toolbar .tt-group-controls{margin-left:auto}
@@ -205,9 +243,9 @@ html:has(.tt-detail-drawer[open]){overflow:hidden;scrollbar-gutter:stable}
 }
 </style>
 <main class="tt" data-timeline aria-labelledby="tt-title">
-<header class="tt-header"><div class="tt-identity"><svg class="tt-logo" viewBox="0 0 256 256" aria-hidden="true"><path fill="currentColor" d="M31.54 97.08A104 104 0 1 1 222.07 176a12 12 0 0 1-20.79-12A80 80 0 1 0 54.73 103.29a12 12 0 0 1-23.19-6.21ZM123 76v40a9 9 0 0 0 18 0V76a9 9 0 0 0-18 0Zm4.5 47.79 38.11 22a9 9 0 0 0 9-15.58l-38.11-22a9 9 0 0 0-9 15.58ZM30 140h72a14 14 0 0 1 0 28H30a14 14 0 0 1 0-28Zm24 56h140a14 14 0 0 1 0 28H54a14 14 0 0 1 0-28Z"/></svg><span>Task Timeline</span></div><div class="tt-actions"><span class="tt-mono tt-generated" data-generated>Loading…</span><button type="button" class="tt-refresh raised" data-action="refresh" data-refresh>Refresh forecast</button></div></header>
+<header class="tt-header"><div class="tt-identity"><svg class="tt-logo" viewBox="0 0 256 256" aria-hidden="true"><path fill="currentColor" d="M31.54 97.08A104 104 0 1 1 222.07 176a12 12 0 0 1-20.79-12A80 80 0 1 0 54.73 103.29a12 12 0 0 1-23.19-6.21ZM123 76v40a9 9 0 0 0 18 0V76a9 9 0 0 0-18 0Zm4.5 47.79 38.11 22a9 9 0 0 0 9-15.58l-38.11-22a9 9 0 0 0-9 15.58ZM30 140h72a14 14 0 0 1 0 28H30a14 14 0 0 1 0-28Zm24 56h140a14 14 0 0 1 0 28H54a14 14 0 0 1 0-28Z"/></svg><span>Task Timeline</span></div><div class="tt-actions"><span class="tt-mono tt-generated" data-generated>Loading…</span><button type="button" class="tt-refresh raised" data-action="refresh" data-refresh><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg><span data-refresh-label>Refresh timeline</span></button></div></header>
 <p class="tt-notice" data-notice role="status" aria-live="polite" hidden></p><p class="tt-zone-warning" data-zone-warning hidden></p>
-<section class="tt-intro"><h1 id="tt-title">Scheduled Task Timeline</h1><p>Start times are calculated from Jellyfin’s trigger rules. Jellyfin runs the tasks; these are projections, not guarantees. Durations come from each task’s last recorded run.</p></section>
+<section class="tt-intro"><h1 id="tt-title">Upcoming Scheduled Tasks</h1><p>Start times are calculated from Jellyfin’s trigger rules. Jellyfin runs the tasks; these are projections, not guarantees. Durations come from each task’s last recorded run.</p></section>
 <section class="tt-summary" data-summary aria-label="Summary" hidden>
 <div class="tt-summary-card"><span class="tt-eyebrow">Next projected start</span><div class="tt-next-line"><span class="tt-value" data-next-time></span></div><span class="tt-small" data-next-names></span><span class="tt-mono tt-next-wait" data-next-wait></span></div>
 <div class="tt-summary-card"><span class="tt-eyebrow">Overlap indicators</span><span class="tt-value" data-overlap-count>0</span><span class="tt-small tt-muted" data-overlap-note></span></div>
@@ -220,7 +258,7 @@ html:has(.tt-detail-drawer[open]){overflow:hidden;scrollbar-gutter:stable}
 <li><i class="tt-key" aria-hidden="true"></i><span><strong>Projected start</strong><span>Bar length uses the last recorded run.</span></span></li>
 <li><i class="tt-key tt-key-overlap" aria-hidden="true">!</i><span><strong>Overlap indicator</strong><span>Select a task to see its overlap partners.</span></span></li>
 <li><i class="tt-key tt-key-pin" aria-hidden="true"></i><span><strong>Short or unknown duration</strong><span>A start marker; see details for the recorded duration.</span></span></li>
-<li><i class="tt-key tt-key-hatch" aria-hidden="true"></i><span><strong>Outside this forecast</strong><span>Hatching marks time beyond the requested range.</span></span></li>
+<li><i class="tt-key tt-key-hatch" aria-hidden="true"></i><span><strong>Outside this range</strong><span>Hatching marks time beyond the requested range.</span></span></li>
 </ul></section></section>
 <section data-agenda-shell hidden><div class="tt-shell"><div class="tt-panel tt-scroll tt-agenda" data-agenda tabindex="0" aria-label="Agenda, scrollable"><div data-agenda-content></div></div></div></section>
 

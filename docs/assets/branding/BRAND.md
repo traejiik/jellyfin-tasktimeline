@@ -6,21 +6,20 @@ Direction B: an open clock ring above three staggered schedule bars. The rounded
 
 | Use | Artwork |
 | --- | --- |
-| README banner, responsive width and 240 px height | `tasktimeline-banner.svg` |
-| Jellyfin plugin catalog, 1600 x 900 | `tasktimeline-card.png` / `.svg` |
-| Square logo with navy background, 1024 x 1024 | `tasktimeline-logo.png` / `.svg` |
+| README, full-width navy banner at 240 px high | `tasktimeline-banner.svg` |
+| Navy-backed card, 1600 x 900 | `tasktimeline-card.svg` |
+| Jellyfin catalog and bundled manual/local install artwork, padded horizontal logo on a 1600 x 900 navy card | `tasktimeline-catalog.svg` |
+| Transparent horizontal logo master | `tasktimeline-horizontal.svg` |
+| Square logo with navy background, 1024 x 1024 | `tasktimeline-logo.svg` |
 | Transparent stacked logo | `tasktimeline-stacked.svg` |
-| Transparent horizontal logo | `tasktimeline-horizontal.svg` |
 | Wordmark only | `tasktimeline-wordmark.svg` |
 | Primary symbol | `tasktimeline-symbol.svg` |
 | Symbol for small sizes | `tasktimeline-symbol-small.svg` |
-| Single-colour symbol | `tasktimeline-symbol-black.svg`, `tasktimeline-symbol-white.svg` |
-| Single-colour lockups | `tasktimeline-horizontal-black.svg`, `tasktimeline-horizontal-white.svg`, `tasktimeline-stacked-black.svg`, `tasktimeline-stacked-white.svg` |
-| Rounded navy app tile | `tasktimeline-icon.svg` / `.png` (512 px) |
-| Touch icon | `tasktimeline-touch-icon.png` (180 px) |
-| Favicon | `tasktimeline-favicon.svg`, `.ico`, `tasktimeline-favicon-16.png`, `tasktimeline-favicon-32.png` |
-| Visual QA | `brand-preview.png`, `brand-preview.html` |
-| Context examples | `brand-presentation.html` |
+| Rounded navy app tile | `tasktimeline-icon.svg` |
+| Unused raster exports, favicons, touch icon and monochrome variants | `generated/` (local, ignored) |
+| Visual QA and context previews | `generated/brand-preview.png`, `generated/brand-preview.html`, `generated/brand-presentation.html` (local, ignored) |
+
+All supplied files are preserved under `docs/assets/branding/`. Core SVG artwork, this guide and `OFL-Nunito.txt` remain tracked. Unused exports and preview files live in the ignored `generated/` directory; they are not included in a fresh clone. The original PNG card is unused; the catalog and packages use `tasktimeline-catalog.svg`.
 
 SVG masters contain outlined lettering and filled shapes. No installed fonts, embedded raster artwork, masks, filters, or outline-stroke operation is required to display them. Raster exports use the SVG master as their source.
 
@@ -31,13 +30,13 @@ SVG masters contain outlined lettering and filled shapes. No installed fonts, em
 | Indigo | `#4935F4` | 73, 53, 244 | Start of the primary symbol gradient |
 | Periwinkle | `#747CFF` | 116, 124, 255 | Clock ring, Task wordmark |
 | Lavender | `#A6ADFF` | 166, 173, 255 | Hands, final schedule bar, Timeline wordmark |
-| Midnight | `#101623` | 16, 22, 35 | Catalog and logo backgrounds |
+| Midnight | `#101623` | 16, 22, 35 | Card and logo backgrounds |
 
 The wordmark is based on Nunito Black (weight 1000) with custom letter spacing, including an open Ti pair. All lettering is converted to paths; no font installation is necessary. Nunito is by the Nunito Project Authors under the SIL Open Font License 1.1; the notice is preserved in `OFL-Nunito.txt`. Source: https://github.com/google/fonts/tree/main/ofl/nunito.
 
 ## Usage
 
-- Use the navy-backed card in the Jellyfin catalog; it is designed for a 16:9 crop.
+- Use `tasktimeline-catalog.svg` for the Jellyfin catalog and install packages. Its 16:9 navy canvas contains the unchanged horizontal logo at 75% of the card width, centered with padding. The raw horizontal master is too wide for Jellyfin’s desktop card crop. Use the navy banner with the stacked logo for the README.
 - Prefer the full symbol at 48 px and above. Use the simplified two-bar symbol below 48 px; 24 px is preferred for UI use, while the 16 px favicon retains only the essential clock-and-bars reading.
 - Use the horizontal lockup at 240 px wide or larger, and the stacked lockup at 160 px or larger. Use the standalone symbol below those sizes.
 - Leave at least one schedule-bar thickness of clear space around the symbol, approximately 24 units on the 256-unit master grid, outside its visible shape. Built-in artboard padding is not the complete clear-space allowance.
@@ -50,4 +49,4 @@ The geometry was rendered and inspected twice. Refinements opened the ring-to-ba
 
 The reference-library check compared Moment.js and WakaTime clock marks: Task Timeline uses an open ring with external schedule bars rather than a complete circular enclosure. This is a design comparison, not trademark clearance. Printed colour matching and physical production have not been tested; this kit targets digital plugin use.
 
-The README banner uses the existing card artwork inside a full-width navy SVG canvas without an outer viewBox. Its nested card retains its 16:9 viewBox and aspect ratio. This fills the README width at a fixed 240 px height without stretching or cropping the logo; the catalog card remains unchanged.
+The README banner follows AniDōki's layout: a full-width navy background at a fixed 240 px height, with a centered 240 × 240 logo area. It embeds the unchanged `tasktimeline-stacked.svg` as a data image with explicit square dimensions and `preserveAspectRatio="xMidYMid meet"`. This replaces the old percentage-sized nested card viewport, keeping the clock and lettering proportional as the banner width changes. The standalone logo masters are unchanged; only the banner's layout wrapper is corrected.
