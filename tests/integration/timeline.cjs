@@ -76,7 +76,7 @@ async function checkContrast(page, root) {
         const leaveHash = (await page.getByRole('link', { name: 'General', exact: true }).getAttribute('href')).split('#')[1];
         await page.waitForFunction(() => ['awaiting-live', 'live'].includes(document.querySelector('[data-timeline]').dataset.liveStatus));
         assert.equal(await page.evaluate(() => window.timelineSubscriptions), 1);
-        assert.equal(await root.locator('#tt-title').innerText(), 'Scheduled Task Timeline');
+        assert.equal(await root.locator('#tt-title').innerText(), 'Upcoming Scheduled Tasks');
         assert.ok(await root.locator('[data-notice]').isHidden());
         assert.doesNotMatch(await root.locator('[data-generated]').innerText(), /Etc\/UTC/);
         assert.equal(await root.getByText('Read-only · next 168 hours', { exact: true }).count(), 0);
@@ -105,7 +105,7 @@ async function checkContrast(page, root) {
         const agenda = root.locator('.tt-agenda-item').first();
         if (await agenda.count()) await agenda.click();
         const selected = await root.locator('[data-detail] h2').innerText();
-        await root.getByRole('button', { name: 'Refresh forecast', exact: true }).click();
+        await root.getByRole('button', { name: 'Refresh timeline', exact: true }).click();
         await page.waitForFunction(() => document.querySelector('[data-timeline]').dataset.forecastStatus === 'ready');
         assert.equal(await root.locator('[data-detail] h2').innerText(), selected);
         await root.getByRole('button', { name: 'Week', exact: true }).click();
@@ -145,7 +145,7 @@ async function checkContrast(page, root) {
                 const select = root.getByRole('combobox', { name: 'Group by', exact: true });
                 await select.selectOption('time');
                 assert.equal(await root.locator('.tt-category').count(), 0);
-                await root.getByRole('button', { name: 'Refresh forecast', exact: true }).click();
+                await root.getByRole('button', { name: 'Refresh timeline', exact: true }).click();
                 await page.waitForFunction(() => document.querySelector('[data-timeline]').dataset.forecastStatus === 'ready');
                 assert.equal(await select.inputValue(), 'time');
                 await select.selectOption('category');
@@ -167,7 +167,7 @@ async function checkContrast(page, root) {
             assert.ok(task, 'Diagnostic task must be installed for the requested live check');
             await page.evaluate(id => window.ApiClient.startScheduledTask(id), task.Id);
             await page.waitForFunction(() => [...document.querySelectorAll('[data-running] progress')].some(p => p.value >= 25 && p.hasAttribute('value')));
-            await root.getByRole('button', { name: 'Refresh forecast', exact: true }).click();
+            await root.getByRole('button', { name: 'Refresh timeline', exact: true }).click();
             await page.waitForFunction(() => document.querySelector('[data-timeline]').dataset.forecastStatus === 'ready');
             assert.ok(await root.locator('[data-running] progress').count());
             await page.waitForFunction(() => !document.querySelector('[data-running] progress'), { timeout: 25000 });
@@ -188,7 +188,7 @@ async function checkContrast(page, root) {
         fixture.tasks[0].name = 'Synthetic <img src=x onerror=alert(1)> task with a long name';
         let mode = 'fixture';
         await page.route('**/TaskTimeline/Forecast', route => ['failure', 'forbidden'].includes(mode) ? route.fulfill({ status: mode === 'forbidden' ? 403 : 503, body: '{}' }) : route.fulfill({ json: mode === 'empty' ? { ...fixture, tasks: [], triggers: [], occurrences: [], overlaps: [] } : fixture }));
-        await root.getByRole('button', { name: 'Refresh forecast', exact: true }).click();
+        await root.getByRole('button', { name: 'Refresh timeline', exact: true }).click();
         await page.waitForFunction(() => document.querySelector('[data-detail]')?.textContent.includes('Synthetic'));
         assert.equal(await root.locator('img').count(), 0);
         assert.equal(await root.locator('[data-overlap-count]').innerText(), '1');
@@ -211,12 +211,12 @@ async function checkContrast(page, root) {
         await page.evaluate(() => window.scrollTo(0, 0));
         await page.screenshot({ path: path.join(output, `synthetic-${info.Version}-desktop.png`), fullPage: true });
         mode = 'failure';
-        await root.getByRole('button', { name: 'Refresh forecast', exact: true }).click();
+        await root.getByRole('button', { name: 'Refresh timeline', exact: true }).click();
         await page.waitForFunction(() => document.querySelector('[data-timeline]').dataset.forecastStatus === 'stale');
         assert.equal(await root.locator('[data-overlap-count]').innerText(), '1');
         assert.ok(await root.locator('.tt-mark').count());
         mode = 'fixture';
-        await root.getByRole('button', { name: 'Refresh forecast', exact: true }).click();
+        await root.getByRole('button', { name: 'Refresh timeline', exact: true }).click();
         await page.waitForFunction(() => document.querySelector('[data-timeline]').dataset.forecastStatus === 'ready');
         await page.setViewportSize({ width: 390, height: 844 });
         await root.getByRole('button', { name: 'Agenda', exact: true }).click();
@@ -250,7 +250,7 @@ async function checkContrast(page, root) {
             console.log('PASS: native light-theme stylesheet, matching sticky surfaces, and subscription cleanup across navigation');
         }
         mode = 'empty';
-        await root.getByRole('button', { name: 'Refresh forecast', exact: true }).click();
+        await root.getByRole('button', { name: 'Refresh timeline', exact: true }).click();
         await page.waitForFunction(() => document.querySelector('[data-timeline]').dataset.forecastStatus === 'ready' && document.querySelector('[data-detail]').textContent.includes('Select a task'));
         assert.equal(await root.locator('.tt-mark').count(), 0);
         assert.equal(await root.locator('[data-next-time]').innerText(), 'No dated starts');
@@ -271,10 +271,10 @@ async function checkContrast(page, root) {
         await page.evaluate(() => { location.hash = '/configurationpage?name=taskTimeline'; });
         await page.waitForFunction(() => document.querySelector('[data-timeline]')?.dataset.liveStatus === 'unavailable' && document.querySelector('[data-timeline]').dataset.forecastStatus === 'ready');
         assert.ok(await root.locator('[data-body]').isVisible());
-        mode = 'forbidden'; await root.getByRole('button', { name: 'Refresh forecast', exact: true }).click();
+        mode = 'forbidden'; await root.getByRole('button', { name: 'Refresh timeline', exact: true }).click();
         await page.waitForFunction(() => document.querySelector('[data-timeline]').dataset.forecastStatus === 'forbidden');
         assert.ok(await root.locator('[data-body]').isHidden());
-        assert.ok(await root.getByRole('button', { name: 'Refresh forecast', exact: true }).isDisabled());
+        assert.ok(await root.getByRole('button', { name: 'Refresh timeline', exact: true }).isDisabled());
         await page.evaluate(() => { window.ApiClient._sdk.webSocket.onStatusChange = window.savedTimelineStatus; });
         console.log('PASS: empty forecast, first-load retry, unavailable live capability and forbidden access without cached data');
         assert.deepEqual(writes, []);

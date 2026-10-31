@@ -85,7 +85,8 @@ export default function (view) {
         setText('[data-notice]', notice || '');
         q('[data-notice]').hidden = !notice;
         root.dataset.forecastStatus = forecastStatus; root.dataset.liveStatus = liveStatus;
-        q('[data-refresh]').textContent = !state.forecast && forecastStatus === 'stale' ? 'Retry' : 'Refresh forecast';
+        // Only the label changes, so the button keeps its icon in the Retry state.
+        setText('[data-refresh-label]', !state.forecast && forecastStatus === 'stale' ? 'Retry' : 'Refresh timeline');
         q('[data-refresh]').disabled = forecastStatus === 'loading' || ['forbidden', 'unauthorized'].includes(forecastStatus);
     }
     function executionLabel(value) { return modules.model.taskStateLabel(value); }
