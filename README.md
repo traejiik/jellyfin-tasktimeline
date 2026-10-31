@@ -1,7 +1,7 @@
 <h1 align="center">Task Timeline</h1>
 <h2 align="center">A Jellyfin Plugin</h2>
 
-<p align="center"><img src="docs/assets/branding/tasktimeline-banner.svg" width="100%" height="240" alt="Task Timeline Logo"></p>
+<p align="center"><img src="docs/assets/branding/tasktimeline-banner.svg" width="100%" alt="Task Timeline Logo"></p>
 
 ## About
 
